@@ -100,7 +100,7 @@ def get_combos(chars):
 
     pre_processing()
 
-    print(f'Total runtime: {time.time() - starttime}')
+    # print(f'Total runtime: {time.time() - starttime}')
 
     format_words_for_printing()  # sorts list alphabetically and by length
     # display_words()  # prints words

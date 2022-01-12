@@ -261,6 +261,21 @@ def algorithm_part_1(board_values, letters):
             if not letter:
                 continue
 
+            check_directions = []
+            try:
+                if not board_values[y-1][x] and not board_values[y+1][x]:  # if tiles above and below are both empty
+                    check_directions.append(VERTICAL)
+            except IndexError:
+                pass
+            try:
+                if not board_values[y][x-1] and not board_values[y][x+1]:  # if tiles to the left and right are both empty
+                    check_directions.append(HORIZONTAL)
+            except IndexError:
+                pass
+
+            if not check_directions:
+                continue
+
             letters_copy = letters.copy()
             letters_copy.append(letter)
             combos = get_combos(letters_copy)
@@ -271,11 +286,13 @@ def algorithm_part_1(board_values, letters):
 
                 # horizontal checks first then vertically
                 for index in letter_indexes:
-                    start_pos = x - index
-                    log_if_word_valid(board_values, word, (start_pos, y), HORIZONTAL, letters)
+                    if HORIZONTAL in check_directions:
+                        start_pos = x - index
+                        log_if_word_valid(board_values, word, (start_pos, y), HORIZONTAL, letters)
 
-                    start_pos = y - index
-                    log_if_word_valid(board_values, word, (x, start_pos), VERTICAL, letters)
+                    if VERTICAL in check_directions:
+                        start_pos = y - index
+                        log_if_word_valid(board_values, word, (x, start_pos), VERTICAL, letters)
 
     return possible_moves
 
@@ -330,23 +347,22 @@ def algorithm_part_3(board_values, letters):
 
 # words inbetween check
 def algorithm_part_4(board_values, letters):
-    s = 0
     for y in range(cn.ROWS):
         row = [i for i in board_values[y] if i]
-        if not row:
+        if len(row) > 1:
             continue
         row.extend(letters)
         row_combos = get_combos(''.join(row))
-        s += len(row_combos)
         for x in range(cn.COLUMNS):
             for i in row_combos:
-                try:
-                    tiles = board_values[y][x:x + i[1]]
-                    tiles.extend(letters)
-                    if not subtract_arrays(list(i[0]), tiles):
-                        log_if_word_valid(board_values, i[0], (x, y), HORIZONTAL, letters, True)
-                except IndexError:
-                    continue
+                if i[1] > 3:
+                    try:
+                        tiles = board_values[y][x:x + i[1]]
+                        tiles.extend(letters)
+                        if not subtract_arrays(list(i[0]), tiles):
+                            log_if_word_valid(board_values, i[0], (x, y), HORIZONTAL, letters, True)
+                    except IndexError:
+                        continue
 
     for x in range(cn.COLUMNS):
         column = [board_values[i][x] for i in range(cn.ROWS) if board_values[i][x]]
@@ -354,14 +370,13 @@ def algorithm_part_4(board_values, letters):
             continue
         column.extend(letters)
         row_combos = get_combos(''.join(column))
-        s += len(row_combos)
         for y in range(cn.ROWS):
             for i in row_combos:
-                try:
-                    tiles = board_values[y:y + i[1]][x]
-                    tiles.extend(letters)
-                    if not subtract_arrays(list(i[0]), tiles):
-                        log_if_word_valid(board_values, i[0], (x, y), VERTICAL, letters, True)
-                except IndexError:
-                    continue
-    print(s)
+                if i[1] > 4:
+                    try:
+                        tiles = board_values[y:y + i[1]][x]
+                        tiles.extend(letters)
+                        if not subtract_arrays(list(i[0]), tiles):
+                            log_if_word_valid(board_values, i[0], (x, y), VERTICAL, letters, True)
+                    except IndexError:
+                        continue

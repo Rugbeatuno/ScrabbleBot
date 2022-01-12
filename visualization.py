@@ -13,6 +13,7 @@ class Visualization:
         self.travel_direction = (1, 0)
         self.letters = []
         self.best_moves = []
+        self.setting_letters = False
 
 
 
@@ -45,7 +46,7 @@ class Visualization:
 
     def draw_deck(self):
         uppercase = [i.upper() for i in self.letters]
-        text = f'Deck: {" ".join(uppercase)}'
+        text = f'Deck{"(edit)" if self.setting_letters else ""}: {" ".join(uppercase)}'
         message = cn.font.render(text, True, (0, 0, 0))
         self.display.blit(message, (10, 10))
 
@@ -99,8 +100,19 @@ class Visualization:
 
         x, y = self.selected_tile
         new_value = cn.KEYS[event]
+
         if new_value == 'input':
-            self.get_user_input()
+            self.setting_letters = not self.setting_letters
+            if not self.setting_letters:
+                self.best_moves = word.find_best_move(self.board.get_value_only_board(), self.letters)
+            return
+
+        # letter changing
+        if self.setting_letters:
+            if new_value:
+                self.letters.append(new_value)
+            elif self.letters:
+                self.letters = self.letters[:-1]
             return
 
         self.board.values[y][x].value = new_value
@@ -120,27 +132,6 @@ class Visualization:
     def change_travel_direction(self):
         self.travel_direction = self.travel_direction[::-1]
 
-    def get_user_input(self):
-        # self.letters = list(input('Enter Letters: '))
-        self.letters = list('gfbayar')
-        b = [['', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '', '', '', 'h', '', '', '', '', '', ''],
-            ['', '', 'f', 'r', 'a', 't', '', '', 'o', '', '', '', '', '', ''],
-            ['', '', '', '', '', 'u', '', 'p', 'o', '', '', '', '', '', 'u'],
-            ['', '', '', '', '', 'i', '', 'e', 't', '', '', '', '', '', 'm'],
-            ['', '', '', '', '', 't', '', '', 'e', '', '', '', 'd', '', 'm'],
-            ['', '', '', '', '', 'i', '', '', 'r', '', '', '', 'u', '', 'a'],
-            ['', '', '', '', '', 'o', 'u', 'd', 's', '', '', 'a', 'n', 'k', 'h'],
-            ['', '', '', '', 'o', 'n', '', 'u', '', '', 'z', '', 'i', '', 's'],
-            ['', '', 'w', '', 'n', '', '', 's', '', 'j', 'o', '', 't', '', ''],
-            ['', 'q', 'i', '', 'o', '', '', 't', 'w', 'a', 'n', 'g', 'e', 'd', ''],
-            ['g', 'i', 'l', 'l', 's', '', '', '', '', 'p', 'e', '', '', '', ''],
-            ['', '', 't', 'a', '', 'r', 'e', 'a', 'v', 'e', 'r', '', '', '', ''],
-            ['', '', '', 'i', '', 'y', 'o', 'n', 'i', 's', '', '', '', '', ''],
-            ['', '', '', 'c', 'r', 'a', 'n', 'e', 'd', '', '', '', '', '', '']]
-        # gfbayar
-
-        self.best_moves = word.find_best_move(b, self.letters)
 
 
 
