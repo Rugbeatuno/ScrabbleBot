@@ -347,10 +347,20 @@ def algorithm_part_3(board_values, letters):
 
 # words inbetween check
 def algorithm_part_4(board_values, letters):
+    words = find_all_words(board_values)
+
     for y in range(cn.ROWS):
         row = [i for i in board_values[y] if i]
-        if len(row) > 1:
+
+        for i in words:
+            if i[1][1] == y:
+                for j in i[0]:
+                    if j in row:
+                        row.remove(j)
+
+        if len(row) <= 1:
             continue
+        print(row)
         row.extend(letters)
         row_combos = get_combos(''.join(row))
         for x in range(cn.COLUMNS):
@@ -366,8 +376,17 @@ def algorithm_part_4(board_values, letters):
 
     for x in range(cn.COLUMNS):
         column = [board_values[i][x] for i in range(cn.ROWS) if board_values[i][x]]
-        if not column:
+        # if not column:
+        #     continue
+        for i in words:
+            if i[1][0] == x:
+                for j in i[0]:
+                    if j in column:
+                        column.remove(j)
+        if len(column) <= 1:
             continue
+
+        print(column)
         column.extend(letters)
         row_combos = get_combos(''.join(column))
         for y in range(cn.ROWS):
