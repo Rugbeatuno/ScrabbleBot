@@ -229,7 +229,8 @@ def log_if_word_valid(current_board_values, word, starting_pos, direction, lette
             return
 
         score, was_bingo = calculte_move_score(current_board_values, case, letters)
-        possible_moves.append((word, starting_pos, direction, score, was_bingo))  # x, y
+        if score > 0:
+            possible_moves.append((word, starting_pos, direction, score, was_bingo))  # x, y
 
 
 def find_best_move(board_values, letters):

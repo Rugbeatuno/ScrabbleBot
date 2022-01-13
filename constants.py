@@ -9,18 +9,30 @@ TRIPLE_WORD_SCORE = 2
 DOUBLE_LETTER_SCORE = 3
 TRIPLE_LETTER_SCORE = 4
 
-BOARD_WIDTH = 530
-BOARD_HEIGHT = 700
+BOARD_WIDTH = 630
+BOARD_HEIGHT = 800
 START_Y = 200
 START_X = 30
 
 font = pygame.font.Font('freesansbold.ttf', 30)
 small_font = pygame.font.Font('freesansbold.ttf', 10)
 
+
+
 KEYS = {
     pygame.K_DELETE: '',
     pygame.K_BACKSPACE: '',
     pygame.K_RETURN: 'input',
+    pygame.K_0: 0,
+    pygame.K_1: 1,
+    pygame.K_2: 2,
+    pygame.K_3: 3,
+    pygame.K_4: 4,
+    pygame.K_5: 5,
+    pygame.K_6: 6,
+    pygame.K_7: 7,
+    pygame.K_8: 8,
+    pygame.K_9: 9,
     pygame.K_a: 'a',
     pygame.K_b: 'b',
     pygame.K_c: 'c',

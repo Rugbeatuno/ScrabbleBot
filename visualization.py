@@ -2,7 +2,7 @@ import pygame
 pygame.display.set_caption('Scrabble Bot')
 
 import constants as cn
-from scrabble import Board, Tile
+from scrabble import Board
 import word
 
 class Visualization:
@@ -13,19 +13,16 @@ class Visualization:
         self.travel_direction = (1, 0)
         self.letters = []
         self.best_moves = []
+
         self.setting_letters = False
+        self.preview_index = None
 
 
-
-    # draw colored squares
-    # draw the grid
-    # draw selected tile
-    # draw letters
     def refresh(self):
-        self.display.fill(Tile.bg_colors[cn.NORMAL])
+        self.display.fill((200, 200, 200))
         self.board.draw(self.display)
 
-        word.invalid_board_state(self.board.get_value_only_board())
+        word.invalid_board_state(self.board.values)
 
         self.draw_selected_tile()
         self.draw_travel_direction()
@@ -37,12 +34,12 @@ class Visualization:
 
     def draw_selected_tile(self):
         x, y = self.selected_tile
-        pygame.draw.rect(self.display, (50, 120, 0), (x * Tile.width + cn.START_X, y * Tile.width + cn.START_Y, Tile.width,  Tile.width), 5)
+        pygame.draw.rect(self.display, (50, 120, 0), (x * Board.tile_width + cn.START_X, y * Board.tile_width + cn.START_Y, Board.tile_width,  Board.tile_width), 5)
 
     def draw_travel_direction(self):
         new_x, new_y = tuple(map(sum, zip(self.selected_tile, self.travel_direction)))
         buffer = 12
-        pygame.draw.rect(self.display, (0, 0, 200), (new_x * Tile.width + buffer + cn.START_X, new_y * Tile.width + cn.START_Y + buffer, Tile.width - buffer * 2, Tile.width - buffer * 2), 3)
+        pygame.draw.rect(self.display, (0, 0, 200), (new_x * Board.tile_width + buffer + cn.START_X, new_y * Board.tile_width + cn.START_Y + buffer, Board.tile_width - buffer * 2, Board.tile_width - buffer * 2), 3)
 
     def draw_deck(self):
         uppercase = [i.upper() for i in self.letters]
@@ -51,12 +48,12 @@ class Visualization:
         self.display.blit(message, (10, 10))
 
     def draw_board_score(self):
-        text = f'Score: {word.calculate_entire_board_score(self.board.get_value_only_board())}'
+        text = f'Score: {word.calculate_entire_board_score(self.board.values)}'
         message = cn.font.render(text, True, (0, 0, 0))
         self.display.blit(message, (10, 50))
 
     def draw_board_validity(self):
-        invalid = word.invalid_board_state(self.board.get_value_only_board())
+        invalid = word.invalid_board_state(self.board.values)
         if invalid:
             errors = ['Board Invalid:', *[f'{i[0]} - {i[1]} ({"H" if i[2] == word.HORIZONTAL else "V"})' for i in invalid]]
             for index, i in enumerate(errors):
@@ -66,7 +63,7 @@ class Visualization:
 
     def draw_board_indexes(self):
         for x in range(cn.COLUMNS):
-            x_pos = int(cn.START_X + x * Tile.width + Tile.width / 2)
+            x_pos = int(cn.START_X + x * Board.tile_width + Board.tile_width / 2)
             y_pos = cn.START_Y - 10
             message = cn.small_font.render(str(x), True, (0, 0, 0))
             textRect = message.get_rect()
@@ -74,7 +71,7 @@ class Visualization:
             self.display.blit(message, textRect)
         for y in range(cn.ROWS):
             x_pos = cn.START_X - 10
-            y_pos = int(cn.START_Y + y * Tile.width + Tile.width / 2)
+            y_pos = int(cn.START_Y + y * Board.tile_width + Board.tile_width / 2)
             message = cn.small_font.render(str(y), True, (0, 0, 0))
             textRect = message.get_rect()
             textRect.center = (x_pos, y_pos)
@@ -88,9 +85,31 @@ class Visualization:
                 message = cn.small_font.render(text, True, (20, 80, 20))
                 self.display.blit(message, (cn.BOARD_WIDTH - 300, 10 + (index * 10)))
 
+            green = (120, 170, 120, 170)
+            if self.preview_index:
+                move = self.best_moves[self.preview_index]
+                length = len(move[0])
+                x = cn.START_X + (move[1][0] * Board.tile_width)
+                y = cn.START_Y + (move[1][1] * Board.tile_width)
+                width = Board.tile_width * length if move[2] == word.HORIZONTAL else Board.tile_width
+                height = Board.tile_width * length if move[2] == word.VERTICAL else Board.tile_width
+
+                surface = pygame.Surface((width, height), pygame.SRCALPHA)
+                surface.fill(green)
+
+                for index, l in enumerate(move[0]):
+                    half = Board.tile_width / 2
+                    letter = cn.font.render(l.upper(), True, (0, 0, 0))
+                    textRect = letter.get_rect()
+                    textRect.center = (half,  Board.tile_width * index + half + 3) if move[2] == word.VERTICAL else (Board.tile_width * index + half + 3,  half + 3)
+                    surface.blit(letter, textRect)
+
+                self.display.blit(surface, (x, y))
+
+
     def get_selected_tile(self, pos):
         x, y = pos
-        new_x, new_y = ((x - cn.START_X) // Tile.width, (y - cn.START_Y) // Tile.width)
+        new_x, new_y = ((x - cn.START_X) // Board.tile_width, (y - cn.START_Y) // Board.tile_width)
         if new_x >= 0 and new_y >= 0:
             self.selected_tile = (int(new_x), int(new_y))
 
@@ -104,18 +123,29 @@ class Visualization:
         if new_value == 'input':
             self.setting_letters = not self.setting_letters
             if not self.setting_letters:
-                self.best_moves = word.find_best_move(self.board.get_value_only_board(), self.letters)
+                self.best_moves = word.find_best_move(self.board.values, self.letters)
             return
 
         # letter changing
         if self.setting_letters:
-            if new_value:
+            if isinstance(new_value, str):
                 self.letters.append(new_value)
             elif self.letters:
                 self.letters = self.letters[:-1]
             return
 
-        self.board.values[y][x].value = new_value
+        if isinstance(new_value, int):
+            if new_value == 0:
+                i = self.best_moves[self.preview_index]
+                word.place_word(self.board.values, i[0], i[1], i[2])
+                self.preview_index = None
+                self.letters = word.subtract_arrays(self.letters, list(i[0]))
+            elif new_value <= len(self.best_moves):
+                self.preview_index = -1 * new_value
+            return
+
+
+        self.board.values[y][x] = new_value
         if new_value:  # not delete or backspace
             next_x, next_y = tuple(map(sum, zip(self.selected_tile, self.travel_direction)))
             if next_x <= cn.COLUMNS-1 and next_y <= cn.ROWS - 1:
