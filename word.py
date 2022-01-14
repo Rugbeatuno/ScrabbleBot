@@ -15,9 +15,9 @@ with open('scrabble_words.txt', 'r') as file:
 HORIZONTAL = 0
 VERTICAL = 1
 
-# possible_moves = []
 manager = multiprocessing.Manager()
 possible_moves = manager.list()
+
 
 def find_all_words(board_values):
     horizontal_map = [[0 for i in range(cn.COLUMNS)] for i in range(cn.ROWS)]
@@ -85,7 +85,6 @@ def tiles_connected(board_values):
     return len(visited_nodes) == tiles_placed
 
 
-
 def invalid_board_state(board_values):
     words = find_all_words(board_values)
     valid = get_valid_words(words)
@@ -100,7 +99,7 @@ def calculate_entire_board_score(board_values):
     return sum(score_word(board_values, i) for i in valid)  # returns the sum of all word scores
 
 
-def calculte_move_score(board_values, case_values, letters):
+def calculate_move_score(board_values, case_values, letters):
     current_board_score = calculate_entire_board_score(board_values)
     case_board_score = calculate_entire_board_score(case_values)
     score = case_board_score - current_board_score
@@ -225,16 +224,24 @@ def subtract_arrays(arr1, arr2):
     return arr1
 
 
-def log_if_word_valid(current_board_values, word, starting_pos, direction, letters, do_connectivity_check=False):
+def log_if_word_valid(current_board_values, word, starting_pos, direction, letters, algorithm, do_connectivity_check=False):
     case = valid_word_placement(current_board_values, word, starting_pos, direction)
 
     if case:
         if do_connectivity_check and not tiles_connected(case):
             return
 
-        score, was_bingo = calculte_move_score(current_board_values, case, letters)
+        score, was_bingo = calculate_move_score(current_board_values, case, letters)
         if score > 0:
-            possible_moves.append((word, starting_pos, direction, score, was_bingo))  # x, y
+            data = {
+                'word': word,
+                'start_pos': starting_pos,
+                'dir': direction,
+                'score': score,
+                'bingo': was_bingo,
+                'algorithm': algorithm
+            }
+            possible_moves.append(data)  # x, y
 
 
 def find_best_move(board_values, letters):
@@ -266,7 +273,7 @@ def find_best_move(board_values, letters):
     # algorithm_part_4(board_values, letters)
     # print(f'alg 4 : {time.time() - s}')
 
-    possible_moves = sorted(possible_moves, key=lambda i: i[3])
+    possible_moves = sorted(possible_moves, key=lambda i: i['score'])
     return possible_moves
 
 
@@ -304,11 +311,11 @@ def algorithm_part_1(board_values, letters):
                 for index in letter_indexes:
                     if HORIZONTAL in check_directions:
                         start_pos = x - index
-                        log_if_word_valid(board_values, word, (start_pos, y), HORIZONTAL, letters)
+                        log_if_word_valid(board_values, word, (start_pos, y), HORIZONTAL, letters, 1)
 
                     if VERTICAL in check_directions:
                         start_pos = y - index
-                        log_if_word_valid(board_values, word, (x, start_pos), VERTICAL, letters)
+                        log_if_word_valid(board_values, word, (x, start_pos), VERTICAL, letters, 1)
 
     return possible_moves
 
@@ -333,7 +340,7 @@ def algorithm_part_2(board_values, letters):
             required_letters = subtract_arrays(list(match), unneeded_letters)
             required_letters = subtract_arrays(required_letters, list(word))
             if not subtract_arrays(required_letters, letters):  # if the word can be made
-                log_if_word_valid(board_values, match, starting_pos, direction, letters)
+                log_if_word_valid(board_values, match, starting_pos, direction, letters, 2)
 
 
 # word end slider algorithm
@@ -358,7 +365,7 @@ def algorithm_part_3(board_values, letters):
                 tile_positions.extend([(i, y + length, HORIZONTAL) for i in range(x - combo_word_length + 1, x + 1)])
             for tile in tile_positions:
                 tile_pos, tile_direction = tile[:2], tile[-1]
-                log_if_word_valid(board_values, combo_word, tile_pos, tile_direction, letters)
+                log_if_word_valid(board_values, combo_word, tile_pos, tile_direction, letters, 3)
 
 
 # words inbetween check
@@ -369,7 +376,7 @@ def algorithm_part_4(board_values, letters):
         row = [i for i in board_values[y] if i]
 
         for i in words:
-            if i[1][1] == y:
+            if i[1][1] == y and i[2] == HORIZONTAL:
                 for j in i[0]:
                     if j in row:
                         row.remove(j)
@@ -385,7 +392,7 @@ def algorithm_part_4(board_values, letters):
                         tiles = board_values[y][x:x + i[1]]
                         tiles.extend(letters)
                         if not subtract_arrays(list(i[0]), tiles):
-                            log_if_word_valid(board_values, i[0], (x, y), HORIZONTAL, letters, True)
+                            log_if_word_valid(board_values, i[0], (x, y), HORIZONTAL, letters, 4, True)
                     except IndexError:
                         continue
 
@@ -394,22 +401,21 @@ def algorithm_part_4(board_values, letters):
         # if not column:
         #     continue
         for i in words:
-            if i[1][0] == x:
+            if i[1][0] == x and i[2] == VERTICAL:
                 for j in i[0]:
                     if j in column:
                         column.remove(j)
         if len(column) <= 1:
             continue
-
         column.extend(letters)
         row_combos = get_combos(''.join(column))
         for y in range(cn.ROWS):
             for i in row_combos:
-                if i[1] > 4:
+                if i[1] > 3:
                     try:
-                        tiles = board_values[y:y + i[1]][x]
+                        tiles = [board_values[i][x] for i in range(y, y + i[1])]
                         tiles.extend(letters)
                         if not subtract_arrays(list(i[0]), tiles):
-                            log_if_word_valid(board_values, i[0], (x, y), VERTICAL, letters, True)
+                            log_if_word_valid(board_values, i[0], (x, y), VERTICAL, letters, 4, True)
                     except IndexError:
-                        continue
+                        pass

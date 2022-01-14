@@ -79,7 +79,7 @@ class Visualization:
 
     def draw_high_scoring_words(self):
         if self.best_moves:
-            options = ['High Scoring Moves:', *[f'{i[0]} - {i[1]} ({"H" if i[2] == word.HORIZONTAL else "V"}) ({i[3]}) {"*" if i[4] else ""}' for i in self.best_moves[-15:]]]
+            options = ['High Scoring Moves:', *[f'{i["word"]} - {i["start_pos"]} ({"H" if i["dir"] == word.HORIZONTAL else "V"}) ({i["score"]}) {"*" if i["bingo"] else ""} (A{i["algorithm"]})' for i in self.best_moves[-15:]]]
             for index, i in enumerate(options):
                 text = i
                 message = cn.small_font.render(text, True, (20, 80, 20))
@@ -88,20 +88,20 @@ class Visualization:
             green = (120, 170, 120, 170)
             if self.preview_index:
                 move = self.best_moves[self.preview_index]
-                length = len(move[0])
-                x = cn.START_X + (move[1][0] * Board.tile_width)
-                y = cn.START_Y + (move[1][1] * Board.tile_width)
-                width = Board.tile_width * length if move[2] == word.HORIZONTAL else Board.tile_width
-                height = Board.tile_width * length if move[2] == word.VERTICAL else Board.tile_width
+                length = len(move['word'])
+                x = cn.START_X + (move['start_pos'][0] * Board.tile_width)
+                y = cn.START_Y + (move['start_pos'][1] * Board.tile_width)
+                width = Board.tile_width * length if move['dir'] == word.HORIZONTAL else Board.tile_width
+                height = Board.tile_width * length if move['dir'] == word.VERTICAL else Board.tile_width
 
                 surface = pygame.Surface((width, height), pygame.SRCALPHA)
                 surface.fill(green)
 
-                for index, l in enumerate(move[0]):
+                for index, l in enumerate(move['word']):
                     half = Board.tile_width / 2
                     letter = cn.font.render(l.upper(), True, (0, 0, 0))
                     textRect = letter.get_rect()
-                    textRect.center = (half,  Board.tile_width * index + half + 3) if move[2] == word.VERTICAL else (Board.tile_width * index + half + 3,  half + 3)
+                    textRect.center = (half,  Board.tile_width * index + half + 3) if move['dir'] == word.VERTICAL else (Board.tile_width * index + half + 3,  half + 3)
                     surface.blit(letter, textRect)
 
                 self.display.blit(surface, (x, y))
@@ -137,9 +137,9 @@ class Visualization:
         if isinstance(new_value, int):
             if new_value == 0:
                 i = self.best_moves[self.preview_index]
-                word.place_word(self.board.values, i[0], i[1], i[2])
+                word.place_word(self.board.values, i['word'], i['start_pos'], i['dir'])
                 self.preview_index = None
-                self.letters = word.subtract_arrays(self.letters, list(i[0]))
+                self.letters = word.subtract_arrays(self.letters, list(i['word']))
             elif new_value <= len(self.best_moves):
                 self.preview_index = -1 * new_value
             return
