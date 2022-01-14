@@ -20,8 +20,8 @@ small_font = pygame.font.Font('freesansbold.ttf', 10)
 
 
 KEYS = {
-    pygame.K_DELETE: '',
-    pygame.K_BACKSPACE: '',
+    pygame.K_DELETE: None,
+    pygame.K_BACKSPACE: None,
     pygame.K_RETURN: 'input',
     pygame.K_0: 0,
     pygame.K_1: 1,

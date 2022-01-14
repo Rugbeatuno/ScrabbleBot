@@ -1,5 +1,6 @@
-import time
+import multiprocessing
 
+import time
 import numpy as np
 import re
 
@@ -14,6 +15,9 @@ with open('scrabble_words.txt', 'r') as file:
 HORIZONTAL = 0
 VERTICAL = 1
 
+# possible_moves = []
+manager = multiprocessing.Manager()
+possible_moves = manager.list()
 
 def find_all_words(board_values):
     horizontal_map = [[0 for i in range(cn.COLUMNS)] for i in range(cn.ROWS)]
@@ -93,7 +97,7 @@ def invalid_board_state(board_values):
 def calculate_entire_board_score(board_values):
     words = find_all_words(board_values)
     valid = get_valid_words(words)
-    return sum(score_word(i) for i in valid)  # returns the sum of all word scores
+    return sum(score_word(board_values, i) for i in valid)  # returns the sum of all word scores
 
 
 def calculte_move_score(board_values, case_values, letters):
@@ -118,21 +122,21 @@ def get_valid_words(words):
     return [i for i in words if i[0] in hashed_dictionary]
 
 
-def calculate_score(word, tiles):
+def calculate_score(board_values, word, tiles):
     points = [cn.LETTER_POINTS[letter] for letter in word]
 
     for index, letter in enumerate(word):
         x, y = tiles[index]
         multiplier = cn.multipliers[y][x]
-        if multiplier == cn.DOUBLE_LETTER_SCORE:
+        if multiplier == cn.DOUBLE_LETTER_SCORE and not board_values[y][x]:
             points[index] *= 2
-        if multiplier == cn.TRIPLE_LETTER_SCORE:
+        if multiplier == cn.TRIPLE_LETTER_SCORE and not board_values[y][x]:
             points[index] *= 3
-        if multiplier == cn.DOUBLE_WORD_SCORE:
+        if multiplier == cn.DOUBLE_WORD_SCORE and not board_values[y][x]:
             points = np.array(points)
             points *= 2
             points = list(points)
-        if multiplier == cn.TRIPLE_WORD_SCORE:
+        if multiplier == cn.TRIPLE_WORD_SCORE and not board_values[y][x]:
             points = np.array(points)
             points *= 3
             points = list(points)
@@ -140,18 +144,18 @@ def calculate_score(word, tiles):
     return sum(points)
 
 
-def score_word(info):
+def score_word(board_values, info):
     word, starting_pos, direction = info
     x, y = starting_pos
 
     if direction == HORIZONTAL:
         tiles = [(i, y) for i in range(x, x + len(word))]  # x, y
-        return calculate_score(word, tiles)
+        return calculate_score(board_values, word, tiles)
         # print(word, calculate_score(word, tiles))
 
     if direction == VERTICAL:
         tiles = [(x, i) for i in range(y, y + len(word))]  # x, y
-        return calculate_score(word, tiles)
+        return calculate_score(board_values, word, tiles)
         # print(word, calculate_score(word, tiles))
 
 
@@ -220,7 +224,7 @@ def subtract_arrays(arr1, arr2):
             arr1.remove(i)
     return arr1
 
-possible_moves = []
+
 def log_if_word_valid(current_board_values, word, starting_pos, direction, letters, do_connectivity_check=False):
     case = valid_word_placement(current_board_values, word, starting_pos, direction)
 
@@ -235,21 +239,32 @@ def log_if_word_valid(current_board_values, word, starting_pos, direction, lette
 
 def find_best_move(board_values, letters):
     global possible_moves
-    possible_moves.clear()
+    possible_moves = manager.list()  # special way of clearing ListProxy
+    s = time.time()
 
-    s = time.time()
-    algorithm_part_1(board_values, letters)
+    a1 = multiprocessing.Process(target=algorithm_part_1, args=(board_values, letters))
+    a2 = multiprocessing.Process(target=algorithm_part_2, args=(board_values, letters))
+    a3 = multiprocessing.Process(target=algorithm_part_3, args=(board_values, letters))
+    a4 = multiprocessing.Process(target=algorithm_part_4, args=(board_values, letters))
+    a1.start()
+    a2.start()
+    a3.start()
+    a4.start()
+    a1.join()
+    a2.join()
+    a3.join()
+    a4.join()
+    # algorithm_part_1(board_values, letters)
     print(f'alg 1 : {time.time()-s}')
-    s = time.time()
-    algorithm_part_2(board_values, letters)
-    print(f'alg 2 : {time.time() - s}')
-    s = time.time()
-    algorithm_part_3(board_values, letters)
-    print(f'alg 3 : {time.time() - s}')
-    s = time.time()
-    algorithm_part_4(board_values, letters)
-    print(f'alg 4 : {time.time() - s}')
-    s = time.time()
+    # s = time.time()
+    # algorithm_part_2(board_values, letters)
+    # print(f'alg 2 : {time.time() - s}')
+    # s = time.time()
+    # algorithm_part_3(board_values, letters)
+    # print(f'alg 3 : {time.time() - s}')
+    # s = time.time()
+    # algorithm_part_4(board_values, letters)
+    # print(f'alg 4 : {time.time() - s}')
 
     possible_moves = sorted(possible_moves, key=lambda i: i[3])
     return possible_moves
@@ -361,7 +376,6 @@ def algorithm_part_4(board_values, letters):
 
         if len(row) <= 1:
             continue
-        print(row)
         row.extend(letters)
         row_combos = get_combos(''.join(row))
         for x in range(cn.COLUMNS):
@@ -387,7 +401,6 @@ def algorithm_part_4(board_values, letters):
         if len(column) <= 1:
             continue
 
-        print(column)
         column.extend(letters)
         row_combos = get_combos(''.join(column))
         for y in range(cn.ROWS):

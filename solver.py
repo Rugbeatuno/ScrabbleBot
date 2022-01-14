@@ -69,8 +69,8 @@ def format_words_for_printing():
     global spellable_words
 
     word_lengths = [(word, len(word)) for word in spellable_words]
-    word_lengths.sort(key=lambda word: word[0])  # sorts alphabetically
-    word_lengths.sort(key=lambda length: length[1])  # sorts words by length
+    # word_lengths.sort(key=lambda word: word[0])  # sorts alphabetically
+    # word_lengths.sort(key=lambda length: length[1])  # sorts words by length
     spellable_words = word_lengths
 
 

@@ -4,6 +4,7 @@ pygame.init()
 from visualization import Visualization
 
 
+
 def main():
     clock = pygame.time.Clock()
     running = True
