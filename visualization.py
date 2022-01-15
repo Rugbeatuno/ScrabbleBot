@@ -1,4 +1,7 @@
 import pygame
+
+import scoring
+
 pygame.display.set_caption('Scrabble Bot')
 
 import constants as cn
@@ -48,7 +51,7 @@ class Visualization:
         self.display.blit(message, (10, 10))
 
     def draw_board_score(self):
-        text = f'Score: {word.calculate_entire_board_score(self.board.values)}'
+        text = f'Score: {scoring.calculate_entire_board_score(self.board.values)}'
         message = cn.font.render(text, True, (0, 0, 0))
         self.display.blit(message, (10, 50))
 

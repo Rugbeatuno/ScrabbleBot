@@ -144,6 +144,10 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
+    <state x="427" y="309" key="#com.jetbrains.python.refactoring.move.PyMoveModuleMembersDialog" timestamp="1642194080106">
+      <screen x="0" y="23" width="1280" height="777" />
+    </state>
+    <state x="427" y="309" key="#com.jetbrains.python.refactoring.move.PyMoveModuleMembersDialog/0.23.1280.777@0.23.1280.777" timestamp="1642194080106" />
     <state width="1260" height="198" key="GridCell.Tab.0.bottom" timestamp="1642193471390">
       <screen x="0" y="23" width="1280" height="777" />
     </state>
