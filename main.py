@@ -6,7 +6,7 @@ import constants as cn
 
 def update_mouse_state(event):
     cn.mouse_pos = pygame.mouse.get_pos()
-    cn.clicked = event.type == pygame.MOUSEBUTTONDOWN
+    cn.clicked = event.type == pygame.MOUSEBUTTONUP
 
 def main():
     clock = pygame.time.Clock()

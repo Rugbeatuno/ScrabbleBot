@@ -1,3 +1,5 @@
+import json
+
 import pygame
 
 import board_utils
@@ -29,6 +31,11 @@ class Visualization:
             Button(10, 80, 100, 50, 'New Board', (0, 0, 0), 15, (144, 240, 144), self.add_board),
             Button(10, 130, 100, 50, 'Delete Board', (0, 0, 0), 10, (240, 144, 144), self.delete_board)
         ]
+
+        with open('boards.json', 'r') as f:
+            if not json.load(f):
+                self.add_board()
+        self.load_board()
 
 
     def refresh(self):
@@ -170,7 +177,7 @@ class Visualization:
             return
 
         if isinstance(new_value, int):
-            if new_value == 0:
+            if new_value == 0 and self.preview_index:
                 move = self.best_moves[self.preview_index]
                 board_utils.place_word(self.board.values, move['word'], move['start_pos'], move['dir'])
 
@@ -216,9 +223,7 @@ class Visualization:
 
     def add_board(self):
         boards = board_cycling.get_boards()
-        if not boards:
-            return
-        new_board_number = int(boards[-1]) + 1
+        new_board_number = int(boards[-1]) + 1 if boards else self.board_number
         empty_board = [['' for x in range(cn.COLUMNS)] for y in range(cn.ROWS)]
         board_cycling.update_board(new_board_number, empty_board, [], 0)
         self.board_number = new_board_number

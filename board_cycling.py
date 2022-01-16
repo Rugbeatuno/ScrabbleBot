@@ -11,7 +11,7 @@ def update_board(board_number, board_values, letters, score):
             data[board_number] = {}
         data[board_number]['board_values'] = board_values
         data[board_number]['letters'] = letters
-        data[board_number]['score'] = score
+        data[board_number]['score'] = int(score)
 
     with open(filename, 'w') as f:
         json.dump(data, f, sort_keys=True)
@@ -38,7 +38,7 @@ def delete_board(board_number):
 
         for i in list(data.keys()):
             if int(i) > int(board_number):
-                new_dict[int(i)-1] = data.pop(i)
+                new_dict[str(int(i)-1)] = data.pop(i)
             else:
                 new_dict[i] = data.pop(i)
 
