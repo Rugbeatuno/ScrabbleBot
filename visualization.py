@@ -1,6 +1,7 @@
 import pygame
 
-import scoring
+import board_utils
+import constants
 
 pygame.display.set_caption('Scrabble Bot')
 
@@ -25,12 +26,12 @@ class Visualization:
         self.display.fill((200, 200, 200))
         self.board.draw(self.display)
 
-        word.invalid_board_state(self.board.values)
+        board_utils.invalid_board_state(self.board.values)
 
         self.draw_selected_tile()
         self.draw_travel_direction()
         self.draw_deck()
-        self.draw_board_score()
+        # self.draw_board_score()
         self.draw_board_validity()
         self.draw_high_scoring_words()
         self.draw_board_indexes()
@@ -50,15 +51,15 @@ class Visualization:
         message = cn.font.render(text, True, (0, 0, 0))
         self.display.blit(message, (10, 10))
 
-    def draw_board_score(self):
-        text = f'Score: {scoring.calculate_entire_board_score(self.board.values)}'
-        message = cn.font.render(text, True, (0, 0, 0))
-        self.display.blit(message, (10, 50))
+    # def draw_board_score(self):
+    #     text = f'Score: {scoring.calculate_entire_board_score(self.board.values)}'
+    #     message = cn.font.render(text, True, (0, 0, 0))
+    #     self.display.blit(message, (10, 50))
 
     def draw_board_validity(self):
-        invalid = word.invalid_board_state(self.board.values)
+        invalid = board_utils.invalid_board_state(self.board.values)
         if invalid:
-            errors = ['Board Invalid:', *[f'{i[0]} - {i[1]} ({"H" if i[2] == word.HORIZONTAL else "V"})' for i in invalid]]
+            errors = ['Board Invalid:', *[f'{i[0]} - {i[1]} ({"H" if i[2] == constants.HORIZONTAL else "V"})' for i in invalid]]
             for index, i in enumerate(errors):
                 text = i
                 message = cn.small_font.render(text, True, (200, 20, 20))
@@ -82,7 +83,7 @@ class Visualization:
 
     def draw_high_scoring_words(self):
         if self.best_moves:
-            options = ['High Scoring Moves:', *[f'{i["word"]} - {i["start_pos"]} ({"H" if i["dir"] == word.HORIZONTAL else "V"}) ({i["score"]}) {"*" if i["bingo"] else ""} (A{i["algorithm"]})' for i in self.best_moves[-15:]]]
+            options = ['High Scoring Moves:', *[f'{i["word"]} - {i["start_pos"]} ({"H" if i["dir"] == constants.HORIZONTAL else "V"}) ({i["score"]}) {"*" if i["bingo"] else ""} (A{i["algorithm"]})' for i in self.best_moves[-15:]]]
             for index, i in enumerate(options):
                 text = i
                 message = cn.small_font.render(text, True, (20, 80, 20))
@@ -94,8 +95,8 @@ class Visualization:
                 length = len(move['word'])
                 x = cn.START_X + (move['start_pos'][0] * Board.tile_width)
                 y = cn.START_Y + (move['start_pos'][1] * Board.tile_width)
-                width = Board.tile_width * length if move['dir'] == word.HORIZONTAL else Board.tile_width
-                height = Board.tile_width * length if move['dir'] == word.VERTICAL else Board.tile_width
+                width = Board.tile_width * length if move['dir'] == constants.HORIZONTAL else Board.tile_width
+                height = Board.tile_width * length if move['dir'] == constants.VERTICAL else Board.tile_width
 
                 surface = pygame.Surface((width, height), pygame.SRCALPHA)
                 surface.fill(green)
@@ -104,7 +105,7 @@ class Visualization:
                     half = Board.tile_width / 2
                     letter = cn.font.render(l.upper(), True, (0, 0, 0))
                     textRect = letter.get_rect()
-                    textRect.center = (half,  Board.tile_width * index + half + 3) if move['dir'] == word.VERTICAL else (Board.tile_width * index + half + 3,  half + 3)
+                    textRect.center = (half,  Board.tile_width * index + half + 3) if move['dir'] == constants.VERTICAL else (Board.tile_width * index + half, half + 3)
                     surface.blit(letter, textRect)
 
                 self.display.blit(surface, (x, y))
@@ -140,14 +141,14 @@ class Visualization:
         if isinstance(new_value, int):
             if new_value == 0:
                 i = self.best_moves[self.preview_index]
-                word.place_word(self.board.values, i['word'], i['start_pos'], i['dir'])
+                board_utils.place_word(self.board.values, i['word'], i['start_pos'], i['dir'])
                 self.preview_index = None
                 self.letters = word.subtract_arrays(self.letters, list(i['word']))
             elif new_value <= len(self.best_moves):
                 self.preview_index = -1 * new_value
             return
 
-
+        new_value = '' if not new_value else new_value
         self.board.values[y][x] = new_value
         if new_value:  # not delete or backspace
             next_x, next_y = tuple(map(sum, zip(self.selected_tile, self.travel_direction)))

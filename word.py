@@ -1,138 +1,16 @@
 import multiprocessing
 
 import time
-import numpy as np
 import re
 
 import constants as cn
-from scoring import calculate_move_score
+from board_utils import find_all_words, valid_word_placement, tiles_connected
+from constants import HORIZONTAL, VERTICAL
 from solver import get_combos
-
-with open('scrabble_words.txt', 'r') as file:
-    dictionary = file.readlines()
-    dictionary = [i.replace('\n', '') for i in dictionary]
-    hashed_dictionary = {i: 0 for i in dictionary}
-
-HORIZONTAL = 0
-VERTICAL = 1
+from scoring import calculate_move_score
 
 manager = multiprocessing.Manager()
 possible_moves = manager.list()
-
-
-def find_all_words(board_values):
-    horizontal_map = [[0 for i in range(cn.COLUMNS)] for i in range(cn.ROWS)]
-    vertical_map = [[0 for i in range(cn.COLUMNS)] for i in range(cn.ROWS)]
-    words = []
-    for j in range(cn.ROWS):
-        for i in range(cn.COLUMNS):
-            value = board_values[j][i]
-            if value:  # not blank
-                # we will check for horizontal words first
-                # continue to move right until we hit the edge of the board or the end of the word
-                # however, to prevent repeating over the same segment of a word
-                # we will store the locations of already seen words and just skip over them
-                width = 0
-                while True:
-                    next_pos = i + width
-                    if next_pos < cn.COLUMNS and board_values[j][next_pos]:
-                        if horizontal_map[j][next_pos]:
-                            break
-                        width += 1
-                        horizontal_map[j][i + width - 1] = 1
-                    else:
-                        if width > 1:
-                            stuff = board_values[j][i:i + width]
-                            text = ''.join(stuff)
-                            words.append((text, (i, j), HORIZONTAL))  # x, y
-                        break
-
-                # now vertically
-                height = 0
-                while True:
-                    next_pos = j + height
-                    if next_pos < cn.ROWS and board_values[next_pos][i]:
-                        if vertical_map[next_pos][i]:
-                            break
-                        height += 1
-                        vertical_map[j + height - 1][i] = 1
-                    else:
-                        if height > 1:
-                            stuff = [board_values[y][i] for y in range(j, j + height)]
-                            text = ''.join(stuff)
-                            words.append((text, (i, j), VERTICAL))  # x, y
-                        break
-    return words
-
-
-def tiles_connected(board_values):
-    visited_nodes = []
-    def DFS(neighbors):
-        for i in neighbors:
-            x, y = i
-            if 0 <= i[0] < cn.COLUMNS and 0 <= i[1] < cn.ROWS and i not in visited_nodes:  # checks if the neighbor is in the board
-                if board_values[y][x]:
-                    visited_nodes.append(i)
-                    new_neighbors = [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]  # immediate adjacent neighbors
-                    DFS(new_neighbors)
-
-    cX, cY = cn.COLUMNS // 2, cn.ROWS // 2
-    DFS(
-        [(cX - 1, cY), (cX + 1, cY), (cX, cY - 1), (cX, cY + 1)]
-    )
-
-    board_values = np.array(board_values)
-    tiles_placed = np.count_nonzero(board_values != '')
-    return len(visited_nodes) == tiles_placed
-
-
-def invalid_board_state(board_values):
-    words = find_all_words(board_values)
-    valid = get_valid_words(words)
-    if len(valid) != len(words):
-        return [i for i in words if i not in valid]
-    return False
-
-
-def get_valid_words(words):
-    return [i for i in words if i[0] in hashed_dictionary]
-
-
-def place_word(board_values, word, pos, direction):
-    x, y = pos
-    for i in range(len(word)):
-        if direction == HORIZONTAL:
-            board_values[y][x + i] = word[i]
-        elif direction == VERTICAL:
-            board_values[y + i][x] = word[i]
-
-
-def valid_word_placement(board_values, word, pos, direction):
-    try:
-        x, y = pos
-        length = len(word)
-
-        if direction == HORIZONTAL and x + length - 1 < cn.COLUMNS:
-            desired_area = board_values[y][x:x + length]
-        elif direction == VERTICAL and y + length - 1 < cn.ROWS:
-            desired_area = [board_values[y + i][x] for i in range(length)]
-        else:
-            return False
-
-        for i in range(len(desired_area)):
-            value = board_values[y + i][x] if direction == VERTICAL else board_values[y][x + i]
-            if value and value != word[i]:  # if a letter is preventing this word then break
-                return False
-
-        case = list(np.array(board_values).copy())
-        place_word(case, word, (x, y), direction)
-
-        if not invalid_board_state(case):
-            return case
-    except IndexError:
-        pass
-
-
 
 # there will be 2 approaches in this algorithm
 # the first will start off by iterating through all tiles on the board
@@ -171,7 +49,7 @@ def log_if_word_valid(current_board_values, word, starting_pos, direction, lette
         if do_connectivity_check and not tiles_connected(case):
             return
 
-        score, was_bingo = calculate_move_score(current_board_values, case, letters)
+        score, was_bingo = calculate_move_score(current_board_values, {'word': word, 'start_pos': starting_pos, 'dir': direction}, letters)
         if score > 0:
             data = {
                 'word': word,
@@ -193,16 +71,19 @@ def find_best_move(board_values, letters):
     a2 = multiprocessing.Process(target=algorithm_part_2, args=(board_values, letters))
     a3 = multiprocessing.Process(target=algorithm_part_3, args=(board_values, letters))
     a4 = multiprocessing.Process(target=algorithm_part_4, args=(board_values, letters))
+    a5 = multiprocessing.Process(target=algorithm_part_5, args=(board_values, letters))
     a1.start()
     a2.start()
     a3.start()
     a4.start()
+    a5.start()
     a1.join()
     a2.join()
     a3.join()
     a4.join()
+    a5.join()
     # algorithm_part_1(board_values, letters)
-    print(f'alg 1 : {time.time()-s}')
+    print(f'algs : {time.time()-s}')
     # s = time.time()
     # algorithm_part_2(board_values, letters)
     # print(f'alg 2 : {time.time() - s}')
@@ -269,7 +150,7 @@ def algorithm_part_2(board_values, letters):
         word, pos, direction = i
         x, y = pos
 
-        possible_matches.extend([j for j in dictionary if word in j])
+        possible_matches.extend([j for j in cn.dictionary if word in j])
         for match in possible_matches:
             offset = 0 - match.index(word)
             starting_pos = (x + offset, y) if direction == HORIZONTAL else (x, y + offset)
@@ -359,3 +240,51 @@ def algorithm_part_4(board_values, letters):
                             log_if_word_valid(board_values, i[0], (x, y), VERTICAL, letters, 4, True)
                     except IndexError:
                         pass
+
+def algorithm_part_5(board_values, letters):
+    anchor_nodes = []
+
+    for y in range(cn.ROWS):
+        for x in range(cn.COLUMNS):
+            value = board_values[y][x]
+            if not value:
+                continue
+
+            for j in range(-1, 2):
+                for i in range(-1, 2):
+                    if j == -1 and i == -1 or \
+                            j == -1 and i == 1 or \
+                            j == 1 and i == -1 or \
+                            j == 1 and i == 1 or \
+                            j == 0 and i == 0:
+                        continue
+                    new_y, new_x = y + j, x + i
+                    if (
+                        new_y in range(cn.ROWS)
+                        and new_x in range(cn.COLUMNS)
+                        and not board_values[new_y][new_x]
+                        and (new_x, new_y) not in anchor_nodes
+                    ):
+                        anchor_nodes.append((new_x, new_y))
+
+    word_combos = get_combos(letters)
+    for word in word_combos:
+        length = len(word[0])
+        for anchor in anchor_nodes:
+            x, y = anchor
+            tile_checks = []
+
+            for i in range(1, length):
+                new_x = x - i  # horizontal
+                if new_x in range(cn.COLUMNS):
+                    tile_checks.append(((new_x, y), HORIZONTAL))
+                new_y = y - i
+                if new_y in range(cn.ROWS):
+                    tile_checks.append(((x, new_y), VERTICAL))
+
+            tile_checks = list(set(tile_checks))
+            for tile in tile_checks:
+                tile_pos, tile_direction = tile[0], tile[1]
+                log_if_word_valid(board_values, word[0], tile_pos, tile_direction, letters, 5)
+
+

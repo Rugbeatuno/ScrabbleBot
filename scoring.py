@@ -1,35 +1,55 @@
 import numpy as np
 
 import constants as cn
-from word import find_all_words, get_valid_words, HORIZONTAL, VERTICAL
+from board_utils import find_all_words, get_valid_words, place_word, invalid_board_state
 
 
-def calculate_entire_board_score(board_values):
-    words = find_all_words(board_values)
-    valid = get_valid_words(words)
-    return sum(score_word(board_values, i) for i in valid)  # returns the sum of all word scores
-
-
-def calculate_move_score(board_values, case_values, letters):
-    current_board_score = calculate_entire_board_score(board_values)
-    case_board_score = calculate_entire_board_score(case_values)
-    score = case_board_score - current_board_score
-
-    # adds 50 points if you use all letters in your hand
-    bingo = False
+def check_for_bingo(board_values, case_values, letters):
     board_values = np.array(board_values)
     case_values = np.array(case_values)
     tiles_placed_board = np.count_nonzero(board_values != '')
     tiles_placed_case = np.count_nonzero(case_values != '')
-    if tiles_placed_case - tiles_placed_board == len(letters):
+    return tiles_placed_case - tiles_placed_board == len(letters)
+
+
+def calculate_move_score(board_values, word, letters):
+    score = 0
+    bingo = False  # adds 50 points if you use all letters in your hand
+
+    original_words = find_all_words(board_values)
+    original_words = get_valid_words(original_words)
+
+    board_values = np.array(board_values)
+    case_values = board_values.copy()
+    board_values = list(board_values)
+    place_word(case_values, word['word'], word['start_pos'], word['dir'])
+    words = find_all_words(case_values)
+    valid = get_valid_words(words)
+
+    for i in valid:
+        if i in original_words:
+            continue
+        board_values = np.array(board_values)
+        case_values = board_values.copy()
+        board_values = list(board_values)
+        place_word(case_values, i[0], i[1], i[2])
+        if invalid_board_state(case_values):
+            continue
+
+        x, y = i[1]
+        tiles = [(i, y) for i in range(x, x + len(i[0]))] if i[2] == cn.HORIZONTAL else [(x, i) for i in
+                                                                                         range(y, y + len(i[0]))]
+        score += calculate_score(board_values, i[0], tiles)
+
+    if check_for_bingo(board_values, case_values, letters):
         score += 50
         bingo = True
-
     return score, bingo
 
 
 def calculate_score(board_values, word, tiles):
     points = [cn.LETTER_POINTS[letter] for letter in word]
+    points = np.array(points)
 
     for index, letter in enumerate(word):
         x, y = tiles[index]
@@ -39,27 +59,8 @@ def calculate_score(board_values, word, tiles):
         if multiplier == cn.TRIPLE_LETTER_SCORE and not board_values[y][x]:
             points[index] *= 3
         if multiplier == cn.DOUBLE_WORD_SCORE and not board_values[y][x]:
-            points = np.array(points)
             points *= 2
-            points = list(points)
         if multiplier == cn.TRIPLE_WORD_SCORE and not board_values[y][x]:
-            points = np.array(points)
             points *= 3
-            points = list(points)
 
-    return sum(points)
-
-
-def score_word(board_values, info):
-    word, starting_pos, direction = info
-    x, y = starting_pos
-
-    if direction == HORIZONTAL:
-        tiles = [(i, y) for i in range(x, x + len(word))]  # x, y
-        return calculate_score(board_values, word, tiles)
-        # print(word, calculate_score(word, tiles))
-
-    if direction == VERTICAL:
-        tiles = [(x, i) for i in range(y, y + len(word))]  # x, y
-        return calculate_score(board_values, word, tiles)
-        # print(word, calculate_score(word, tiles))
+    return sum(list(points))

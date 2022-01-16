@@ -18,6 +18,11 @@ font = pygame.font.Font('freesansbold.ttf', 30)
 small_font = pygame.font.Font('freesansbold.ttf', 10)
 
 
+with open('scrabble_words.txt', 'r') as file:
+    dictionary = file.readlines()
+    dictionary = [i.replace('\n', '') for i in dictionary]
+    hashed_dictionary = {i: 0 for i in dictionary}
+
 
 KEYS = {
     pygame.K_DELETE: None,
@@ -107,3 +112,5 @@ multipliers = [
     [0, 1, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 1, 0],
     [2, 0, 0, 3, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 2],
 ]
+HORIZONTAL = 0
+VERTICAL = 1
