@@ -2,8 +2,11 @@ import pygame
 pygame.init()
 
 from visualization import Visualization
+import constants as cn
 
-
+def update_mouse_state(event):
+    cn.mouse_pos = pygame.mouse.get_pos()
+    cn.clicked = event.type == pygame.MOUSEBUTTONDOWN
 
 def main():
     clock = pygame.time.Clock()
@@ -12,11 +15,10 @@ def main():
     display = Visualization()
     while running:
         for event in pygame.event.get():
+            update_mouse_state(event)
+
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.MOUSEBUTTONUP:
-                pos = pygame.mouse.get_pos()
-                display.get_selected_tile(pos)
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     display.change_travel_direction()

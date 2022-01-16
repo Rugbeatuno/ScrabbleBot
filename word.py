@@ -60,6 +60,8 @@ def log_if_word_valid(current_board_values, word, starting_pos, direction, lette
                 'algorithm': algorithm
             }
             possible_moves.append(data)  # x, y
+            return True
+    return False
 
 
 def find_best_move(board_values, letters):
@@ -69,17 +71,17 @@ def find_best_move(board_values, letters):
 
     a1 = multiprocessing.Process(target=algorithm_part_1, args=(board_values, letters))
     a2 = multiprocessing.Process(target=algorithm_part_2, args=(board_values, letters))
-    a3 = multiprocessing.Process(target=algorithm_part_3, args=(board_values, letters))
+    # a3 = multiprocessing.Process(target=algorithm_part_3, args=(board_values, letters))
     a4 = multiprocessing.Process(target=algorithm_part_4, args=(board_values, letters))
     a5 = multiprocessing.Process(target=algorithm_part_5, args=(board_values, letters))
     a1.start()
     a2.start()
-    a3.start()
+    # a3.start()
     a4.start()
     a5.start()
     a1.join()
     a2.join()
-    a3.join()
+    # a3.join()
     a4.join()
     a5.join()
     # algorithm_part_1(board_values, letters)
@@ -285,6 +287,11 @@ def algorithm_part_5(board_values, letters):
             tile_checks = list(set(tile_checks))
             for tile in tile_checks:
                 tile_pos, tile_direction = tile[0], tile[1]
-                log_if_word_valid(board_values, word[0], tile_pos, tile_direction, letters, 5)
+                success = log_if_word_valid(board_values, word[0], tile_pos, tile_direction, letters, 5)
+                # if not success:
+                #     print('fail', tile_pos)
+                #     break
+            # else:
+            #     print(tile_checks)
 
 

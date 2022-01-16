@@ -24,10 +24,16 @@ with open('scrabble_words.txt', 'r') as file:
     hashed_dictionary = {i: 0 for i in dictionary}
 
 
+mouse_pos = (0, 0)
+clicked = False
+
+
 KEYS = {
     pygame.K_DELETE: None,
     pygame.K_BACKSPACE: None,
     pygame.K_RETURN: 'input',
+    pygame.K_LEFT: 'left',
+    pygame.K_RIGHT: 'right',
     pygame.K_0: 0,
     pygame.K_1: 1,
     pygame.K_2: 2,
