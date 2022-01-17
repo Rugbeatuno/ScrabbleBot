@@ -6,7 +6,7 @@ import board_utils
 import constants
 import constants as cn
 from scrabble import Board
-import word
+import algorithms
 import board_cycling
 from button import Button
 
@@ -29,14 +29,13 @@ class Visualization:
 
         self.buttons = [
             Button(10, 80, 100, 50, 'New Board', (0, 0, 0), 15, (144, 240, 144), self.add_board),
-            Button(10, 130, 100, 50, 'Delete Board', (0, 0, 0), 10, (240, 144, 144), self.delete_board)
+            Button(10, 130, 100, 50, 'Delete Board', (0, 0, 0), 12, (240, 144, 144), self.delete_board)
         ]
 
         with open('boards.json', 'r') as f:
             if not json.load(f):
                 self.add_board()
         self.load_board()
-
 
     def refresh(self):
         board_utils.invalid_board_state(self.board.values)
@@ -97,8 +96,6 @@ class Visualization:
                 message = cn.small_font.render(text, True, (200, 20, 20))
                 self.display.blit(message, (cn.BOARD_WIDTH - 150, 10 + (index * 10)))
 
-
-
     def draw_board_indexes(self):
         for x in range(cn.COLUMNS):
             x_pos = int(cn.START_X + x * Board.tile_width + Board.tile_width / 2)
@@ -118,29 +115,28 @@ class Visualization:
     def draw_high_scoring_words(self):
         if not self.best_moves:
             return
-        options = ['High Scoring Moves:', *[f'{i["word"]} - {i["start_pos"]} ({"H" if i["dir"] == constants.HORIZONTAL else "V"}) ({i["score"]}) {"*" if i["bingo"] else ""} (A{i["algorithm"]})' for i in self.best_moves[-15:]]]
+        options = ['High Scoring Moves:', *[f'{i.word} - {i.pos} ({i.get_string_dir()}) ({i.score}) {"*" if i.was_bingo else ""} (A{i.alg})' for i in self.best_moves[-15:]]]
         for index, i in enumerate(options):
-            text = i
-            message = cn.small_font.render(text, True, (20, 80, 20))
+            message = cn.small_font.render(i, True, (20, 80, 20))
             self.display.blit(message, (cn.BOARD_WIDTH - 300, 10 + (index * 10)))
 
         if self.preview_index:
             move = self.best_moves[self.preview_index]
-            length = len(move['word'])
-            x = cn.START_X + (move['start_pos'][0] * Board.tile_width)
-            y = cn.START_Y + (move['start_pos'][1] * Board.tile_width)
-            width = Board.tile_width * length if move['dir'] == constants.HORIZONTAL else Board.tile_width
-            height = Board.tile_width * length if move['dir'] == constants.VERTICAL else Board.tile_width
+            length = move.get_length()
+            x = cn.START_X + (move.pos[0] * Board.tile_width)
+            y = cn.START_Y + (move.pos[1] * Board.tile_width)
+            width = Board.tile_width * length if move.dir == constants.HORIZONTAL else Board.tile_width
+            height = Board.tile_width * length if move.dir == constants.VERTICAL else Board.tile_width
 
             surface = pygame.Surface((width, height), pygame.SRCALPHA)
             green = (120, 170, 120, 170)
             surface.fill(green)
 
-            for index, l in enumerate(move['word']):
+            for index, l in enumerate(move.word):
                 half = Board.tile_width / 2
                 letter = cn.font.render(l.upper(), True, (0, 0, 0))
                 textRect = letter.get_rect()
-                textRect.center = (half,  Board.tile_width * index + half + 3) if move['dir'] == constants.VERTICAL else (Board.tile_width * index + half, half + 3)
+                textRect.center = (half,  Board.tile_width * index + half + 3) if move.dir == constants.VERTICAL else (Board.tile_width * index + half, half + 3)
                 surface.blit(letter, textRect)
 
             self.display.blit(surface, (x, y))
@@ -163,7 +159,7 @@ class Visualization:
         if new_value == 'input':
             self.setting_letters = not self.setting_letters
             if not self.setting_letters:
-                self.best_moves = word.find_best_move(self.board.values, self.letters)
+                self.best_moves = algorithms.find_best_move(self.board.values, self.letters)
                 self.preview_index = None
             return
 
@@ -179,11 +175,11 @@ class Visualization:
         if isinstance(new_value, int):
             if new_value == 0 and self.preview_index:
                 move = self.best_moves[self.preview_index]
-                board_utils.place_word(self.board.values, move['word'], move['start_pos'], move['dir'])
+                board_utils.place_word(self.board.values, move.word, move.pos, move.dir)
 
                 self.preview_index = None
-                self.letters = word.subtract_arrays(self.letters, list(move['word']))
-                self.total_score += move['score']
+                self.letters = algorithms.subtract_arrays(self.letters, list(move.word))
+                self.total_score += move.score
 
             elif new_value <= len(self.best_moves):
                 self.preview_index = -1 * new_value

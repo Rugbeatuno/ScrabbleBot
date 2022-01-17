@@ -48,8 +48,7 @@ def calculate_move_score(board_values, word, letters):
 
 
 def calculate_score(board_values, word, tiles):
-    points = [cn.LETTER_POINTS[letter] for letter in word]
-    points = np.array(points)
+    points = np.array([cn.LETTER_POINTS[letter] for letter in word])
 
     for index, letter in enumerate(word):
         x, y = tiles[index]

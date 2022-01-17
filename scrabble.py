@@ -1,10 +1,12 @@
 import pygame
 
 import constants as cn
-
+import numpy as np
 
 class Board:
     values = [['' for x in range(cn.COLUMNS)] for y in range(cn.ROWS)]
+    values = np.array(values, dtype='<U1')
+
     tile_width = int((cn.BOARD_WIDTH - cn.START_X) // cn.COLUMNS)
     tile_height = int((cn.BOARD_HEIGHT - cn.START_Y) // cn.COLUMNS)
 

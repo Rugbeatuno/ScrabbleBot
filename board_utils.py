@@ -4,7 +4,7 @@ import constants as cn
 from constants import HORIZONTAL, VERTICAL
 
 
-def find_all_words(board_values):
+def find_all_words(board_values: list):
     horizontal_map = [[0 for i in range(cn.COLUMNS)] for i in range(cn.ROWS)]
     vertical_map = [[0 for i in range(cn.COLUMNS)] for i in range(cn.ROWS)]
     words = []
@@ -23,16 +23,17 @@ def find_all_words(board_values):
                 for i in range(x, x + width):
                     horizontal_map[y][i] = 1
                 if width > 1:
-                    words.append((''.join(board_values[y][x:x+width]), (x, y), HORIZONTAL))  # x, y
+                    words.append((''.join(board_values[y][x:x + width]), (x, y), HORIZONTAL))  # x, y
 
             if next_y in range(cn.ROWS) and not vertical_map[y][x] and board_values[next_y][x]:
-                    col = [board_values[i][x] for i in range(cn.ROWS)][y:]
-                    height = col.index('') if '' in col else cn.ROWS - y
+                col = [board_values[i][x] for i in range(cn.ROWS)][y:]
+                height = col.index('') if '' in col else cn.ROWS - y
 
-                    for i in range(y, y + height):
-                        vertical_map[i][x] = 1
-                    if height > 1:
-                        words.append((''.join([board_values[i][x] for i in range(y, y + height)]), (x, y), VERTICAL))  # x, y
+                for i in range(y, y + height):
+                    vertical_map[i][x] = 1
+                if height > 1:
+                    words.append(
+                        (''.join([board_values[i][x] for i in range(y, y + height)]), (x, y), VERTICAL))  # x, y
 
     return words
 
@@ -86,13 +87,15 @@ def invalid_board_state(board_values):
 
 def tiles_connected(board_values):
     visited_nodes = []
+
     def DFS(neighbors):
         for i in neighbors:
             x, y = i
-            if 0 <= i[0] < cn.COLUMNS and 0 <= i[1] < cn.ROWS and i not in visited_nodes:  # checks if the neighbor is in the board
+            if 0 <= i[0] < cn.COLUMNS and 0 <= i[
+                1] < cn.ROWS and i not in visited_nodes:  # checks if the neighbor is in the board
                 if board_values[y][x]:
                     visited_nodes.append(i)
-                    new_neighbors = [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]  # immediate adjacent neighbors
+                    new_neighbors = [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]  # immediate adjacent neighbors
                     DFS(new_neighbors)
 
     cX, cY = cn.COLUMNS // 2, cn.ROWS // 2
@@ -103,3 +106,8 @@ def tiles_connected(board_values):
     board_values = np.array(board_values)
     tiles_placed = np.count_nonzero(board_values != '')
     return len(visited_nodes) == tiles_placed
+
+
+def point_on_screen(pos):
+    x, y = pos
+    return x in range(cn.COLUMNS) and y in range(cn.ROWS)
