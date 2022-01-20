@@ -10,12 +10,20 @@ import algorithms
 import board_cycling
 from button import Button
 
+from deck import Deck
+
 
 pygame.display.set_caption('Scrabble Bot')
 
 class Visualization:
     def __init__(self):
         self.board = Board()
+        self.deck = Deck(
+            cn.SCREEN_WIDTH/2 - cn.DECK_TILE_DIMS * (cn.MAX_LETTERS / 2),
+            cn.SCREEN_HEIGHT - cn.BUFFER * 5,
+            cn.DECK_TILE_DIMS * cn.MAX_LETTERS,
+            cn.DECK_TILE_DIMS
+        )
         self.display = pygame.display.set_mode((cn.SCREEN_WIDTH, cn.SCREEN_HEIGHT))
 
         self.letters = []
@@ -43,6 +51,7 @@ class Visualization:
 
         self.display.fill((200, 200, 200))
         self.board.update(self.display)
+        self.deck.draw(self.display)
         self.refresh_buttons()
 
         self.draw_board_number()
