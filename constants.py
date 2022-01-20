@@ -9,12 +9,19 @@ TRIPLE_WORD_SCORE = 2
 DOUBLE_LETTER_SCORE = 3
 TRIPLE_LETTER_SCORE = 4
 
-BOARD_WIDTH = 630
-BOARD_HEIGHT = 800
-START_Y = 200
-START_X = 30
+BUFFER = 30
 
-font = pygame.font.Font('freesansbold.ttf', 30)
+SCREEN_WIDTH = 1000
+SCREEN_HEIGHT = 800
+
+BOARD_DIMS = 500
+BOARD_START_Y = BUFFER * 3
+BOARD_START_X = BUFFER
+BOARD_WIDTH = BOARD_DIMS + BOARD_START_X
+BOARD_HEIGHT = BOARD_DIMS + BOARD_START_Y
+
+
+font = pygame.font.Font('freesansbold.ttf', 25)
 small_font = pygame.font.Font('freesansbold.ttf', 10)
 
 
