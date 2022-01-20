@@ -43,7 +43,6 @@ event = None
 KEYS = {
     pygame.K_DELETE: None,
     pygame.K_BACKSPACE: None,
-    pygame.K_RETURN: 'input',
     pygame.K_LEFT: 'left',
     pygame.K_RIGHT: 'right',
     pygame.K_0: 0,

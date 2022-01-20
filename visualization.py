@@ -29,7 +29,6 @@ class Visualization:
         self.letters = []
         self.best_moves = []
 
-        self.setting_letters = False
         self.preview_index = None
         self.total_score = 0
         self.board_number = 1
@@ -51,7 +50,7 @@ class Visualization:
 
         self.display.fill((200, 200, 200))
         self.board.update(self.display)
-        self.deck.draw(self.display)
+        self.deck.update(self.display, event)
         self.refresh_buttons()
 
         self.draw_board_number()
@@ -159,21 +158,7 @@ class Visualization:
         x, y = self.board.selected_tile
         new_value = cn.KEYS[event]
 
-        if new_value == 'input':
-            self.setting_letters = not self.setting_letters
-            if not self.setting_letters:
-                self.best_moves = algorithms.find_best_move(self.board.get_values(), self.letters)
-                self.preview_index = None
-            return
 
-        # letter changing
-        if self.setting_letters:
-            if isinstance(new_value, str):
-                self.letters.append(new_value)
-            elif self.letters:
-                self.letters = self.letters[:-1]
-            # self.save_board()
-            return
 
         if isinstance(new_value, int):
             if new_value == 0 and self.preview_index:
