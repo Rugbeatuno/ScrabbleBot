@@ -8,6 +8,7 @@ def update_mouse_state(event):
     cn.mouse_pos = pygame.mouse.get_pos()
     cn.clicked = event.type == pygame.MOUSEBUTTONUP
 
+
 def main():
     clock = pygame.time.Clock()
     running = True
@@ -16,17 +17,11 @@ def main():
     while running:
         for event in pygame.event.get():
             update_mouse_state(event)
-
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    display.change_travel_direction()
-                else:
-                    display.get_pressed_key(event.key)
 
-
-        display.refresh()
+            display.refresh(event)
+        display.refresh(None)
         pygame.display.update()
         clock.tick(15)
 

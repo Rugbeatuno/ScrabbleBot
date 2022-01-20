@@ -35,6 +35,7 @@ with open('scrabble_words.txt', 'r') as file:
 
 mouse_pos = (0, 0)
 clicked = False
+event = None
 
 
 KEYS = {

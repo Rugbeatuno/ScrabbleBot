@@ -9,27 +9,40 @@ class Tile:
         self.dims = dimensions
         self.x, self.y, self.width, self.height = self.dims
         self.bg = bg_color
+
         self.letter = letter
-        self.points = cn.LETTER_POINTS[self.letter]
+        self.points = cn.LETTER_POINTS[self.letter] if letter else 0
 
         self.letter_font_size = int(self.width * 0.75)
-        self.points_font_size = int(self.width * 0.2)
+        self.points_font_size = int(self.width * 0.3)
+
+        self.selected = False
+
+    def update(self, window):
+        self.draw(window)
 
     def draw(self, window):
         pygame.draw.rect(window, self.bg, self.dims, 0)
-
+        if self.selected:
+            pygame.draw.rect(window, (50, 120, 0), self.dims, 5, 3)
+        if not self.letter:
+            return
         # main letter
         x_center = self.x + self.width / 2
         y_center = self.y + self.height / 2
-        create_text(window, (x_center, y_center), self.letter, self.letter_font_size)
-
+        create_text(window, (x_center, y_center+2), self.letter.upper(), self.letter_font_size)
         # letter score
         x_center = self.x + self.width - 5
         y_center = self.y + self.height - 5
         create_text(window, (x_center, y_center), self.points, self.points_font_size)
+
+    def set_letter(self, new_letter):
+        self.letter = new_letter
+        self.points = cn.LETTER_POINTS[self.letter] if self.letter else 0
 
     def get_letter(self):
         return self.letter
 
     def get_points(self):
         return self.points
+

@@ -1,13 +1,13 @@
 import pygame
 
+import board_utils
 import constants as cn
 import numpy as np
 from graphic_utils import create_text
 from tile import Tile
 
+
 class Board:
-    values = np.array([['' for x in range(cn.COLUMNS)] for y in range(cn.ROWS)], dtype=object)
-    tile_dims = cn.BOARD_DIMS // cn.COLUMNS
     bg_colors = {
         cn.NORMAL: (192, 192, 192),
         cn.TRIPLE_WORD_SCORE: (255, 165, 0),
@@ -16,10 +16,23 @@ class Board:
         cn.DOUBLE_LETTER_SCORE: (173, 216, 230)
     }
 
-    
-    def draw(self, window):
-        self.draw_tiles(window)
+    def __init__(self):
+        self.tile_dims = cn.BOARD_DIMS // cn.COLUMNS
+        self.values = np.array([[
+            Tile(
+                (x * self.tile_dims + cn.BOARD_START_X, y * self.tile_dims + cn.BOARD_START_Y, self.tile_dims, self.tile_dims),
+                self.bg_colors[cn.multipliers[y][x]],
+                ''
+            ) for x in range(cn.COLUMNS)] for y in range(cn.ROWS)], dtype=object)
+
+        self.selected_tile = (0, 0)  # x, y
+        self.travel_direction = (1, 0)
+
+    def update(self, window):
+        self.update_tiles(window)
+        self.select_tile()
         self.draw_grid(window)
+        self.draw_travel_direction(window)
 
     def draw_grid(self, window):
         for i in range(cn.ROWS + 1):
@@ -29,26 +42,36 @@ class Board:
             pygame.draw.line(window, (0, 0, 0), (cn.BOARD_START_X, y), (cn.BOARD_WIDTH, y))
             pygame.draw.line(window, (0, 0, 0), (x, cn.BOARD_START_Y), (x, cn.BOARD_HEIGHT))
 
-    def draw_background(self, window, col, row):
-        color = self.bg_colors[cn.multipliers[row][col]]
-        x, y = self.tile_dims * col + cn.BOARD_START_X, self.tile_dims * row + cn.BOARD_START_Y
-        pygame.draw.rect(window, color, (x, y, self.tile_dims, self.tile_dims), 0)
-
-    def draw_text(self, window, col, row):
-        x_center = cn.BOARD_START_X + self.tile_dims * col + self.tile_dims / 2
-        y_center = cn.BOARD_START_Y + self.tile_dims * row + self.tile_dims / 2
-        tile_value = self.values[row][col]
-        if tile_value:
-            create_text(window, (x_center, y_center+3), tile_value.upper(), 25)
-
-            # letter points
-            points = str(cn.LETTER_POINTS[tile_value])
-            x_center = self.tile_dims * (col + 1) + cn.BOARD_START_X - 5
-            y_center = self.tile_dims * (row + 1) + cn.BOARD_START_Y - 5
-            create_text(window, (x_center, y_center), points, 10)
-
-    def draw_tiles(self, window):
+    def update_tiles(self, window):
         for y in range(cn.ROWS):
             for x in range(cn.COLUMNS):
-                self.draw_background(window, x, y)
-                self.draw_text(window, x, y)
+                tile = self.values[y][x]
+                tile.update(window)
+
+    def draw_travel_direction(self, window):
+        new_x, new_y = map(sum, zip(self.selected_tile, self.travel_direction))
+
+        buffer = 12
+        pygame.draw.rect(window, (0, 0, 200), (
+            new_x * self.tile_dims + buffer + cn.BOARD_START_X, new_y * self.tile_dims + cn.BOARD_START_Y + buffer,
+            self.tile_dims - buffer * 2, self.tile_dims - buffer * 2), 3)
+
+    def change_travel_direction(self):
+        self.travel_direction = self.travel_direction[::-1]
+
+    def select_tile(self):
+        if cn.clicked:
+            x, y = cn.mouse_pos
+            new_x, new_y = (x - cn.BOARD_START_X) // self.tile_dims, (y - cn.BOARD_START_Y) // self.tile_dims
+            if board_utils.point_on_screen((new_x, new_y)):
+                self.selected_tile = (int(new_x), int(new_y))
+                for y in range(cn.ROWS):
+                    for x in range(cn.COLUMNS):
+                        self.values[y][x].selected = False
+                self.values[new_y][new_x].selected = True
+
+
+
+
+    def get_values(self):
+        return [[self.values[y][x].get_letter() for x in range(cn.COLUMNS)] for y in range(cn.ROWS)]
