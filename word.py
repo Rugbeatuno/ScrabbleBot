@@ -10,7 +10,6 @@ class Word:
         self.was_bingo = bingo
         self.alg = algorithm
 
-
     def get_length(self):
         return len(self.word)
 

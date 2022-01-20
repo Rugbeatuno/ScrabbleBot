@@ -61,12 +61,12 @@ class Visualization:
 
     def draw_selected_tile(self):
         x, y = self.selected_tile
-        pygame.draw.rect(self.display, (50, 120, 0), (x * Board.tile_width + cn.BOARD_START_X, y * Board.tile_width + cn.BOARD_START_Y, Board.tile_width, Board.tile_width), 5)
+        pygame.draw.rect(self.display, (50, 120, 0), (x * Board.tile_dims + cn.BOARD_START_X, y * Board.tile_dims + cn.BOARD_START_Y, Board.tile_dims, Board.tile_dims), 5)
 
     def draw_travel_direction(self):
         new_x, new_y = tuple(map(sum, zip(self.selected_tile, self.travel_direction)))
         buffer = 12
-        pygame.draw.rect(self.display, (0, 0, 200), (new_x * Board.tile_width + buffer + cn.BOARD_START_X, new_y * Board.tile_width + cn.BOARD_START_Y + buffer, Board.tile_width - buffer * 2, Board.tile_width - buffer * 2), 3)
+        pygame.draw.rect(self.display, (0, 0, 200), (new_x * Board.tile_dims + buffer + cn.BOARD_START_X, new_y * Board.tile_dims + cn.BOARD_START_Y + buffer, Board.tile_dims - buffer * 2, Board.tile_dims - buffer * 2), 3)
 
     def draw_deck(self):
         uppercase = [i.upper() for i in self.letters]
@@ -98,7 +98,7 @@ class Visualization:
 
     def draw_board_indexes(self):
         for x in range(cn.COLUMNS):
-            x_pos = int(cn.BOARD_START_X + x * Board.tile_width + Board.tile_width / 2)
+            x_pos = int(cn.BOARD_START_X + x * Board.tile_dims + Board.tile_dims / 2)
             y_pos = cn.BOARD_START_Y - 10
             message = cn.small_font.render(str(x), True, (0, 0, 0))
             textRect = message.get_rect()
@@ -106,7 +106,7 @@ class Visualization:
             self.display.blit(message, textRect)
         for y in range(cn.ROWS):
             x_pos = cn.BOARD_START_X - 10
-            y_pos = int(cn.BOARD_START_Y + y * Board.tile_width + Board.tile_width / 2)
+            y_pos = int(cn.BOARD_START_Y + y * Board.tile_dims + Board.tile_dims / 2)
             message = cn.small_font.render(str(y), True, (0, 0, 0))
             textRect = message.get_rect()
             textRect.center = (x_pos, y_pos)
@@ -123,20 +123,20 @@ class Visualization:
         if self.preview_index:
             move = self.best_moves[self.preview_index]
             length = move.get_length()
-            x = cn.BOARD_START_X + (move.pos[0] * Board.tile_width)
-            y = cn.BOARD_START_Y + (move.pos[1] * Board.tile_width)
-            width = Board.tile_width * length if move.dir == constants.HORIZONTAL else Board.tile_width
-            height = Board.tile_width * length if move.dir == constants.VERTICAL else Board.tile_width
+            x = cn.BOARD_START_X + (move.pos[0] * Board.tile_dims)
+            y = cn.BOARD_START_Y + (move.pos[1] * Board.tile_dims)
+            width = Board.tile_dims * length if move.dir == constants.HORIZONTAL else Board.tile_dims
+            height = Board.tile_dims * length if move.dir == constants.VERTICAL else Board.tile_dims
 
             surface = pygame.Surface((width, height), pygame.SRCALPHA)
             green = (120, 170, 120, 170)
             surface.fill(green)
 
             for index, l in enumerate(move.word):
-                half = Board.tile_width / 2
+                half = Board.tile_dims / 2
                 letter = cn.font.render(l.upper(), True, (0, 0, 0))
                 textRect = letter.get_rect()
-                textRect.center = (half,  Board.tile_width * index + half + 3) if move.dir == constants.VERTICAL else (Board.tile_width * index + half, half + 3)
+                textRect.center = (half, Board.tile_dims * index + half + 3) if move.dir == constants.VERTICAL else (Board.tile_dims * index + half, half + 3)
                 surface.blit(letter, textRect)
 
             self.display.blit(surface, (x, y))
@@ -145,7 +145,7 @@ class Visualization:
     def get_selected_tile(self):
         if cn.clicked:
             x, y = cn.mouse_pos
-            new_x, new_y = ((x - cn.BOARD_START_X) // Board.tile_width, (y - cn.BOARD_START_Y) // Board.tile_width)
+            new_x, new_y = ((x - cn.BOARD_START_X) // Board.tile_dims, (y - cn.BOARD_START_Y) // Board.tile_dims)
             if new_x >= 0 and new_y >= 0:
                 self.selected_tile = (int(new_x), int(new_y))
 
