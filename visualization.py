@@ -50,7 +50,7 @@ class Visualization:
 
         self.display.fill((200, 200, 200))
         self.board.update(self.display)
-        self.deck.update(self.display, event)
+        self.deck.update(self.display, event, self.board)
         self.refresh_buttons()
 
         self.draw_board_number()

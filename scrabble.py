@@ -59,16 +59,17 @@ class Board:
     def change_travel_direction(self):
         self.travel_direction = self.travel_direction[::-1]
 
-    def select_tile(self):
+    def select_tile(self, new_x=None, new_y=None):
         if cn.clicked:
             x, y = cn.mouse_pos
             new_x, new_y = (x - cn.BOARD_START_X) // self.tile_dims, (y - cn.BOARD_START_Y) // self.tile_dims
-            if board_utils.point_on_screen((new_x, new_y)):
-                self.selected_tile = (int(new_x), int(new_y))
-                for y in range(cn.ROWS):
-                    for x in range(cn.COLUMNS):
-                        self.values[y][x].selected = False
-                self.values[new_y][new_x].selected = True
+
+        if new_x and new_y and board_utils.point_on_screen((new_x, new_y)):
+            self.selected_tile = (int(new_x), int(new_y))
+            for y in range(cn.ROWS):
+                for x in range(cn.COLUMNS):
+                    self.values[y][x].selected = False
+            self.values[new_y][new_x].selected = True
 
     def set_tile(self, key):
         x, y = self.selected_tile
