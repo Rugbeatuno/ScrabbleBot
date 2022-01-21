@@ -13,8 +13,8 @@ class Tile:
         self.letter = letter
         self.points = cn.LETTER_POINTS[self.letter] if letter else 0
 
-        self.letter_font_size = int(self.width * 0.75)
-        self.points_font_size = int(self.width * 0.3)
+        self.letter_font_size = int(self.width * 0.7)
+        self.points_font_size = int(self.width * 0.25)
 
         self.selected = False
 
@@ -32,8 +32,8 @@ class Tile:
         y_center = self.y + self.height / 2
         create_text(window, (x_center, y_center+2), self.letter.upper(), self.letter_font_size)
         # letter score
-        x_center = self.x + self.width - 5
-        y_center = self.y + self.height - 5
+        x_center = self.x + self.width - (self.width * 0.15)
+        y_center = self.y + self.height - (self.height * 0.15)
         create_text(window, (x_center, y_center), self.points, self.points_font_size)
 
     def set_letter(self, new_letter):

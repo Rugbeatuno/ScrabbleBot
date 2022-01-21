@@ -54,7 +54,6 @@ class Visualization:
         self.refresh_buttons()
 
         self.draw_board_number()
-        self.draw_deck()
         self.draw_score()
         self.draw_board_validity()
         self.draw_high_scoring_words()
@@ -75,11 +74,7 @@ class Visualization:
             else:
                 self.get_pressed_key(event.key)
 
-    def draw_deck(self):
-        uppercase = [i.upper() for i in self.letters]
-        text = f'Deck{"(edit)" if self.setting_letters else ""}: {" ".join(uppercase)}'
-        message = cn.font.render(text, True, (0, 0, 0))
-        self.display.blit(message, (10, 10))
+
 
     def draw_score(self):
         text = f'Score: {self.total_score}'
@@ -181,19 +176,7 @@ class Visualization:
                 self.load_board()
             return
 
-        new_value = '' if not new_value else new_value
-        self.board.values[y][x].set_letter(new_value)
-        # self.save_board()
-        if new_value:  # not delete or backspace
-            next_x, next_y = tuple(map(sum, zip(self.board.selected_tile, self.board.travel_direction)))
-            if next_x <= cn.COLUMNS-1 and next_y <= cn.ROWS - 1:
-                self.board.selected_tile = (next_x, next_y)
 
-        else:
-            reverse_travel_direction = (self.board.travel_direction[0] * -1, self.board.travel_direction[1] * -1)
-            next_x, next_y = tuple(map(sum, zip(self.board.selected_tile, reverse_travel_direction)))
-            if next_x >= 0 and next_y >= 0:
-                self.board.selected_tile = (next_x, next_y)
 
 
     def add_board(self):

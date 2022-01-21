@@ -70,8 +70,9 @@ class Board:
                         self.values[y][x].selected = False
                 self.values[new_y][new_x].selected = True
 
-
-
+    def set_tile(self, key):
+        x, y = self.selected_tile
+        self.values[y][x].set_letter(key)
 
     def get_values(self):
         return [[self.values[y][x].get_letter() for x in range(cn.COLUMNS)] for y in range(cn.ROWS)]
