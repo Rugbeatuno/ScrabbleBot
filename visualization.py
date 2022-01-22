@@ -11,6 +11,7 @@ import board_cycling
 from button import Button
 
 from deck import Deck
+from options import Options
 
 
 pygame.display.set_caption('Scrabble Bot')
@@ -18,12 +19,18 @@ pygame.display.set_caption('Scrabble Bot')
 class Visualization:
     def __init__(self):
         self.board = Board()
-        self.deck = Deck(
+        self.deck = Deck((
             cn.SCREEN_WIDTH/2 - cn.DECK_TILE_DIMS * (cn.MAX_LETTERS / 2),
             cn.SCREEN_HEIGHT - cn.BUFFER * 5,
             cn.DECK_TILE_DIMS * cn.MAX_LETTERS,
             cn.DECK_TILE_DIMS
-        )
+        ))
+        self.options = Options((
+            cn.SCREEN_WIDTH - cn.BUFFER - cn.OPTIONS_WIDTH,
+            cn.BOARD_START_Y,
+            cn.OPTIONS_WIDTH,
+            cn.OPTIONS_HEIGHT - cn.BOARD_START_Y
+        ))
         self.display = pygame.display.set_mode((cn.SCREEN_WIDTH, cn.SCREEN_HEIGHT))
 
         self.letters = []
@@ -34,8 +41,8 @@ class Visualization:
         self.board_number = 1
 
         self.buttons = [
-            Button(10, 80, 100, 50, 'New Board', (0, 0, 0), 15, (144, 240, 144), self.add_board),
-            Button(10, 130, 100, 50, 'Delete Board', (0, 0, 0), 12, (240, 144, 144), self.delete_board)
+            Button((10, 10, 100, 50), 'New Board', (0, 0, 0), 15, (144, 240, 144), self.add_board),
+            Button((120, 10, 100, 50), 'Delete Board', (0, 0, 0), 12, (240, 144, 144), self.delete_board)
         ]
 
         # with open('boards.json', 'r') as f:
@@ -45,16 +52,18 @@ class Visualization:
 
     def refresh(self, event):
         self.parse_events(event)
-
-        board_utils.invalid_board_state(self.board.get_values())
-
         self.display.fill((200, 200, 200))
+
         self.board.update(self.display)
+        self.options.update(self.display, event)
         self.deck.update(self.display, event, self.board)
         self.refresh_buttons()
 
+
+        board_utils.invalid_board_state(self.board.get_values())
+
         self.draw_board_number()
-        self.draw_score()
+        # self.draw_score()
         self.draw_board_validity()
         self.draw_high_scoring_words()
         self.draw_board_indexes()

@@ -7,11 +7,10 @@ from board_utils import point_on_screen
 
 
 class Deck:
-    def __init__(self, x, y, width, height):
-        self.x = x
-        self.y = y
-        self.width = width / cn.MAX_LETTERS
-        self.height = height
+    def __init__(self, dimensions):
+        self.dims = dimensions
+        self.x, self.y, self.width, self.height = self.dims
+        self.width /= cn.MAX_LETTERS
 
         self.letters = [Tile(
             (self.x + self.width * i + i, self.y, self.width, self.height),

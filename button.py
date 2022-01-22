@@ -3,11 +3,9 @@ import constants as cn
 import time
 
 class Button:
-    def __init__(self, x, y, width, height, text, text_color, font_size, bg, function):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
+    def __init__(self, dimensions, text, text_color, font_size, bg, function):
+        self.dims = dimensions
+        self.x, self.y, self.width, self.height = self.dims
         self.text = text
         self.text_color = text_color
         self.font_size = font_size
@@ -16,7 +14,7 @@ class Button:
         self.time_since_last_press = time.time()
 
     def draw(self, window):
-        pygame.draw.rect(window, self.bg, (self.x, self.y, self.width, self.height), 0, 3)
+        pygame.draw.rect(window, self.bg, self.dims, 0, 3)
 
         font = pygame.font.Font('freesansbold.ttf', self.font_size)
         message = font.render(self.text, True, self.text_color)
