@@ -30,6 +30,7 @@ class Visualization:
             cn.BOARD_START_Y,
             cn.OPTIONS_WIDTH,
             cn.OPTIONS_HEIGHT - cn.BOARD_START_Y
+            # cn.OPTIONS_HEIGHT * 0.6 - cn.BOARD_START_Y
         ))
         self.display = pygame.display.set_mode((cn.SCREEN_WIDTH, cn.SCREEN_HEIGHT))
 

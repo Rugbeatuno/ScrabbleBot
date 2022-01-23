@@ -33,24 +33,26 @@ class Options:
         pygame.draw.rect(window, cn.BG, (self.x, 0, self.width, self.y), 0)
         pygame.draw.rect(window, cn.BG, (self.x, self.y + self.height, self.width, cn.SCREEN_HEIGHT), 0)
         # pygame.draw.rect(window, (180, 180, 180), self.dims, 0, 2)  # option area
-        pygame.draw.rect(window, (0, 0, 0), self.dims, 2, 2)  # black frame
-        text = ''
-        for i in ['#', 'Word', 'Position', 'Direction', 'Bingo', 'Total Score']:
-            text += i.ljust(Options.spacing - 1)
+        pygame.draw.rect(window, (0, 0, 0), self.dims, 1)  # black frame
+        text = ''.join(
+            i.ljust(Options.spacing - 1)
+            for i in ['#', 'Word', 'Position', 'Direction', 'Bingo', 'Total Score']
+        )
+
         x_center = self.x + self.width / 2
         y_center = self.y - 10
         create_text(window, (x_center, y_center), text, 10)
 
     def create_buttons(self):
         height = 40
-        width = self.width - Options.buffer * 2
+        width = self.width - Options.buffer * 4
 
         for index, i in enumerate(self.possible_moves[::-1]):
             x = self.buffer
-            y = index * height + self.buffer * index
+            y = index * height + self.buffer * index + self.buffer * 2
 
             text = ''
-            for i in [index+1, i.word, i.pos, i.dir, i.was_bingo, i.score]:
+            for i in [f'{index+1}.', i.word, i.pos, i.get_string_dir(), i.get_string_bingo(), i.score]:
                 i = str(i)
                 text += i.ljust(Options.spacing)
 
@@ -59,7 +61,7 @@ class Options:
                 text,
                 (0, 0, 0),
                 10,
-                (170, 170, 170),
+                (165, 165, 165),
                 nothing
             )
             self.move_buttons.append(option)
@@ -68,10 +70,8 @@ class Options:
     def update_buttons(self, window):
         if not self.current_surface:
             return
-
         window.blit(self.current_surface, (self.x + self.buffer, self.scroll_y + self.y))
         self.draw(window)
-
 
     def create_surface(self):
         surface = pygame.Surface((self.width - self.buffer * 2, self.max_y)).convert_alpha()
@@ -79,7 +79,6 @@ class Options:
         for i in self.move_buttons:
             i.draw(surface)
             i.was_clicked()
-
         self.current_surface = surface
 
     def update_scroll_state(self, event):
@@ -93,3 +92,4 @@ class Options:
         self.possible_moves = moves
         self.create_buttons()
         self.create_surface()
+        self.scroll_y = 0

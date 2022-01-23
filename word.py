@@ -15,3 +15,6 @@ class Word:
 
     def get_string_dir(self):
         return 'H' if self.dir == HORIZONTAL else 'V'
+
+    def get_string_bingo(self):
+        return "T" if self.was_bingo else 'F'

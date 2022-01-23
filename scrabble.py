@@ -64,7 +64,9 @@ class Board:
             x, y = cn.mouse_pos
             new_x, new_y = (x - cn.BOARD_START_X) // self.tile_dims, (y - cn.BOARD_START_Y) // self.tile_dims
 
-        if new_x and new_y and board_utils.point_on_screen((new_x, new_y)):
+        if new_x is None and new_y is None:
+            return
+        if board_utils.point_on_screen((new_x, new_y)):
             self.selected_tile = (int(new_x), int(new_y))
             for y in range(cn.ROWS):
                 for x in range(cn.COLUMNS):
