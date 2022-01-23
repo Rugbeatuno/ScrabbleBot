@@ -2,6 +2,8 @@ import pygame
 
 ROWS = 15
 COLUMNS = 15
+BG = (200, 200, 200)
+
 
 NORMAL = 0
 DOUBLE_WORD_SCORE = 1

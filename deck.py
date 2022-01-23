@@ -4,6 +4,7 @@ import constants as cn
 from tile import Tile
 from graphic_utils import create_text
 from board_utils import point_on_screen
+from algorithms import find_best_move
 
 
 class Deck:
@@ -20,8 +21,8 @@ class Deck:
 
         self.setting_letters = False
 
-    def update(self, window, event, board_obj):
-        self.parse_key_presses(event, board_obj)
+    def update(self, window, board_obj, options_obj, event):
+        self.parse_key_presses(board_obj, options_obj, event)
         self.draw(window)
 
     def draw(self, window):
@@ -34,8 +35,8 @@ class Deck:
         if index or index == 0:
             self.letters[index].selected = True
 
-    def parse_key_presses(self, event, board):
-        letter_values = self.get_values()
+    def parse_key_presses(self, board, options, event):
+        letter_values = self.get_letters()
         end = cn.MAX_LETTERS - 1
         empty_tile_index = letter_values.index('') if '' in letter_values else 'end'
 
@@ -50,6 +51,7 @@ class Deck:
             else:
                 self.setting_letters = False
                 self.select_tile()
+                options.set_possible_moves(find_best_move(board.get_values(), self.get_letters()))
             return
 
         key = str(pygame.key.name(event.key))
@@ -83,7 +85,5 @@ class Deck:
                 board.selected_tile = (next_x, next_y)
                 board.select_tile(next_x, next_y)
 
-
-
-    def get_values(self):
+    def get_letters(self) -> list:
         return [i.letter for i in self.letters]

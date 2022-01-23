@@ -23,7 +23,7 @@ def main():
             display.refresh(event)
         display.refresh(None)
         pygame.display.update()
-        clock.tick(15)
+        clock.tick(60)
 
     pygame.quit()
     quit()

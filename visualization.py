@@ -52,11 +52,11 @@ class Visualization:
 
     def refresh(self, event):
         self.parse_events(event)
-        self.display.fill((200, 200, 200))
+        self.display.fill(cn.BG)
 
-        self.board.update(self.display)
         self.options.update(self.display, event)
-        self.deck.update(self.display, event, self.board)
+        self.board.update(self.display)
+        self.deck.update(self.display, self.board, self.options, event)
         self.refresh_buttons()
 
 

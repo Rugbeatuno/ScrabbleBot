@@ -13,6 +13,7 @@ class Button:
         self.function = function
         self.time_since_last_press = time.time()
 
+
     def draw(self, window):
         pygame.draw.rect(window, self.bg, self.dims, 0, 3)
 

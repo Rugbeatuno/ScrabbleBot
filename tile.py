@@ -37,8 +37,9 @@ class Tile:
         create_text(window, (x_center, y_center), self.points, self.points_font_size)
 
     def set_letter(self, new_letter):
-        self.letter = new_letter
-        self.points = cn.LETTER_POINTS[self.letter] if self.letter else 0
+        if new_letter in 'abcdefghijklmnopqrstuvwxyz':
+            self.letter = new_letter
+            self.points = cn.LETTER_POINTS[self.letter] if self.letter else 0
 
     def get_letter(self):
         return self.letter
