@@ -25,8 +25,8 @@ class Options:
         self.max_y = 0
 
     def update(self, window, event):
-        self.draw(window)
         self.update_scroll_state(event)
+        self.draw(window)
         self.update_buttons(window)
 
     def draw(self, window):
@@ -50,7 +50,6 @@ class Options:
         for index, i in enumerate(self.possible_moves[::-1]):
             x = self.buffer
             y = index * height + self.buffer * index + self.buffer * 2
-            print(index, y)
 
             text = ''
             for i in [f'{index+1}.', i.word, i.pos, i.get_string_dir(), i.get_string_bingo(), i.score]:
@@ -72,16 +71,17 @@ class Options:
     def update_buttons(self, window):
         if not self.current_surface:
             return
-        for button in self.move_buttons:
-            button.update(self.current_surface, self.scroll_y)
+
         window.blit(self.current_surface, (self.x + self.buffer, self.scroll_y + self.y))
         self.draw(window)
+        for button in self.move_buttons:
+            button.was_clicked(self.scroll_y)
 
     def create_surface(self):
         surface = pygame.Surface((self.width - self.buffer * 2, self.max_y)).convert_alpha()
         surface.fill((180, 180, 180))
         for button in self.move_buttons:
-            button.update(surface, self.scroll_y)
+            button.update(surface)
         self.current_surface = surface
 
     def update_scroll_state(self, event):

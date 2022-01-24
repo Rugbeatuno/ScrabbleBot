@@ -72,6 +72,7 @@ class Visualization:
     def refresh_buttons(self):
         for button in self.buttons:
             button.update(self.display)
+            button.was_clicked(0)
 
     def parse_events(self, event):
         if not event:
