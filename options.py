@@ -50,6 +50,7 @@ class Options:
         for index, i in enumerate(self.possible_moves[::-1]):
             x = self.buffer
             y = index * height + self.buffer * index + self.buffer * 2
+            print(index, y)
 
             text = ''
             for i in [f'{index+1}.', i.word, i.pos, i.get_string_dir(), i.get_string_bingo(), i.score]:
@@ -62,31 +63,33 @@ class Options:
                 (0, 0, 0),
                 10,
                 (165, 165, 165),
-                nothing
+                nothing,
+                (self.x + x, self.y + y)
             )
             self.move_buttons.append(option)
-        self.max_y = len(self.possible_moves) * height
+        self.max_y = len(self.possible_moves) * height - self.height
 
     def update_buttons(self, window):
         if not self.current_surface:
             return
+        for button in self.move_buttons:
+            button.update(self.current_surface, self.scroll_y)
         window.blit(self.current_surface, (self.x + self.buffer, self.scroll_y + self.y))
         self.draw(window)
 
     def create_surface(self):
         surface = pygame.Surface((self.width - self.buffer * 2, self.max_y)).convert_alpha()
         surface.fill((180, 180, 180))
-        for i in self.move_buttons:
-            i.draw(surface)
-            i.was_clicked()
+        for button in self.move_buttons:
+            button.update(surface, self.scroll_y)
         self.current_surface = surface
 
     def update_scroll_state(self, event):
         if event and event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 4:  # scroll down
-                self.scroll_y = min(self.scroll_y + 30, 0)
+                self.scroll_y = min(self.scroll_y + 25, 0)
             elif event.button == 5:
-                self.scroll_y = max(self.scroll_y - 30, -1 * self.max_y)
+                self.scroll_y = max(self.scroll_y - 25, -1 * self.max_y)
 
     def set_possible_moves(self, moves: list):
         self.possible_moves = moves
