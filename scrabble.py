@@ -79,3 +79,7 @@ class Board:
 
     def get_values(self):
         return [[self.values[y][x].get_letter() for x in range(cn.COLUMNS)] for y in range(cn.ROWS)]
+
+    @classmethod
+    def get_tile_dims(cls):
+        return cn.BOARD_DIMS // cn.COLUMNS

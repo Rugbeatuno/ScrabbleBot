@@ -42,8 +42,8 @@ class Visualization:
         self.board_number = 1
 
         self.buttons = [
-            Button((10, 10, 100, 50), 'New Board', (0, 0, 0), 15, (144, 240, 144), self.add_board),
-            Button((120, 10, 100, 50), 'Delete Board', (0, 0, 0), 12, (240, 144, 144), self.delete_board)
+            Button((10, 10, 100, 50), 'New Board', (0, 0, 0), 15, (144, 240, 144), on_click=self.add_board),
+            Button((120, 10, 100, 50), 'Delete Board', (0, 0, 0), 12, (240, 144, 144), on_click=self.delete_board)
         ]
 
         # with open('boards.json', 'r') as f:
@@ -55,8 +55,8 @@ class Visualization:
         self.parse_events(event)
         self.display.fill(cn.BG)
 
-        self.options.update(self.display, event)
         self.board.update(self.display)
+        self.options.update(self.display, event)
         self.deck.update(self.display, self.board, self.options, event)
         self.refresh_buttons()
 
@@ -66,13 +66,12 @@ class Visualization:
         self.draw_board_number()
         # self.draw_score()
         self.draw_board_validity()
-        self.draw_high_scoring_words()
         self.draw_board_indexes()
 
     def refresh_buttons(self):
         for button in self.buttons:
             button.update(self.display)
-            button.was_clicked(0)
+            button.actions(0)
 
     def parse_events(self, event):
         if not event:
@@ -123,35 +122,6 @@ class Visualization:
             textRect = message.get_rect()
             textRect.center = (x_pos, y_pos)
             self.display.blit(message, textRect)
-
-    def draw_high_scoring_words(self):
-        if not self.best_moves:
-            return
-        options = ['High Scoring Moves:', *[f'{i.word} - {i.pos} ({i.get_string_dir()}) ({i.score}) {"*" if i.was_bingo else ""} (A{i.alg})' for i in self.best_moves[-15:]]]
-        for index, i in enumerate(options):
-            message = cn.small_font.render(i, True, (20, 80, 20))
-            self.display.blit(message, (cn.BOARD_WIDTH - 300, 10 + (index * 10)))
-
-        if self.preview_index:
-            move = self.best_moves[self.preview_index]
-            length = move.get_length()
-            x = cn.BOARD_START_X + (move.pos[0] * self.board.tile_dims)
-            y = cn.BOARD_START_Y + (move.pos[1] * self.board.tile_dims)
-            width = self.board.tile_dims * length if move.dir == constants.HORIZONTAL else self.board.tile_dims
-            height = self.board.tile_dims * length if move.dir == constants.VERTICAL else self.board.tile_dims
-
-            surface = pygame.Surface((width, height), pygame.SRCALPHA)
-            green = (120, 170, 120, 170)
-            surface.fill(green)
-
-            for index, l in enumerate(move.word):
-                half = self.board.tile_dims / 2
-                letter = cn.font.render(l.upper(), True, (0, 0, 0))
-                textRect = letter.get_rect()
-                textRect.center = (half, self.board.tile_dims * index + half + 3) if move.dir == constants.VERTICAL else (self.board.tile_dims * index + half, half + 3)
-                surface.blit(letter, textRect)
-
-            self.display.blit(surface, (x, y))
 
 
 
