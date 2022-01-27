@@ -81,7 +81,7 @@ def find_best_move(board_values: list, letters: list) -> list:
     a4.join()
 
     print(f'algs : {time.perf_counter() - s}')
-
+    possible_moves = list(set(possible_moves))
     return sorted(possible_moves, key=lambda i: i.score)
 
 

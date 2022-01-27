@@ -48,6 +48,8 @@ class Options:
         create_text(window, (x_center, y_center), text, 10)
 
     def create_buttons(self):
+        self.move_buttons.clear()
+
         height = 40
         width = self.width - Options.buffer * 4
 
